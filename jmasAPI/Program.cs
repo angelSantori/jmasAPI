@@ -18,8 +18,8 @@ builder.Services.AddSwaggerGen();
 // Habilitar CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigins", policy =>
-        policy.WithOrigins("http://localhost:3000", "https://jmasapi.up.railway.app")
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
@@ -83,7 +83,7 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // Configura el middleware de CORS
-app.UseCors("AllowSpecificOrigins");
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
