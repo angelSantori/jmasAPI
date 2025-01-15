@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins", policy =>
-        policy.WithOrigins("http://localhost:3000", "https://tu-dominio-frontend.com") // Reemplaza con tus dominios permitidos
+        policy.WithOrigins("http://localhost:3000", "https://jmasapi.up.railway.app")
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
