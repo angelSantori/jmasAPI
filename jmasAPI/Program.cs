@@ -15,6 +15,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Habilitar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins", policy =>
+        policy.WithOrigins("http://localhost:3000", "https://tu-dominio-frontend.com") // Reemplaza con tus dominios permitidos
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+});
+
 //Hash Pass
 builder.Services.AddScoped<IPasswordHasher<Users>, PasswordHasher<Users>>();
 
@@ -72,6 +81,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Configura el middleware de CORS
+app.UseCors("AllowSpecificOrigins");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
