@@ -25,6 +25,8 @@ namespace jmasAPI.Models
 
         public double? prodPrecio { get; set; }
 
+        public string prodImgB64 { get; set; }
+
         [ForeignKey("Proveedores")]
         public int idProveedor { get; set; }
     }
