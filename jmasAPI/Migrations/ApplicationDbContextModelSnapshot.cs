@@ -238,17 +238,17 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("varchar(10)");
 
-                    b.Property<int>("Id_User")
+                    b.Property<int>("Id_Producto")
                         .HasColumnType("int");
 
-                    b.Property<int>("idProducto")
+                    b.Property<int>("Id_User")
                         .HasColumnType("int");
 
                     b.HasKey("Id_AjusteMas");
 
-                    b.HasIndex("Id_User");
+                    b.HasIndex("Id_Producto");
 
-                    b.HasIndex("idProducto");
+                    b.HasIndex("Id_User");
 
                     b.ToTable("AjustesMas");
                 });
@@ -273,17 +273,17 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("varchar(10)");
 
-                    b.Property<int>("Id_User")
+                    b.Property<int>("Id_Producto")
                         .HasColumnType("int");
 
-                    b.Property<int>("idProducto")
+                    b.Property<int>("Id_User")
                         .HasColumnType("int");
 
                     b.HasKey("Id_AjusteMenos");
 
-                    b.HasIndex("Id_User");
+                    b.HasIndex("Id_Producto");
 
-                    b.HasIndex("idProducto");
+                    b.HasIndex("Id_User");
 
                     b.ToTable("AjustesMenos");
                 });
@@ -374,11 +374,11 @@ namespace jmasAPI.Migrations
 
             modelBuilder.Entity("jmasAPI.Models.Productos", b =>
                 {
-                    b.Property<int>("idProducto")
+                    b.Property<int>("Id_Producto")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idProducto"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Producto"));
 
                     b.Property<int>("idProveedor")
                         .HasColumnType("int");
@@ -415,7 +415,7 @@ namespace jmasAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("idProducto");
+                    b.HasKey("Id_Producto");
 
                     b.HasIndex("idProveedor");
 
@@ -599,30 +599,30 @@ namespace jmasAPI.Migrations
 
             modelBuilder.Entity("jmasAPI.Models.AjustesMas", b =>
                 {
-                    b.HasOne("jmasAPI.Models.Users", null)
+                    b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
-                        .HasForeignKey("Id_User")
+                        .HasForeignKey("Id_Producto")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("jmasAPI.Models.Productos", null)
+                    b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
-                        .HasForeignKey("idProducto")
+                        .HasForeignKey("Id_User")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("jmasAPI.Models.AjustesMenos", b =>
                 {
-                    b.HasOne("jmasAPI.Models.Users", null)
+                    b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
-                        .HasForeignKey("Id_User")
+                        .HasForeignKey("Id_Producto")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("jmasAPI.Models.Productos", null)
+                    b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
-                        .HasForeignKey("idProducto")
+                        .HasForeignKey("Id_User")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

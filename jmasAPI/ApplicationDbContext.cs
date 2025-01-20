@@ -10,7 +10,7 @@ namespace jmasAPI
 
         public DbSet<jmasAPI.Models.Users> Users { get; set; } = default!;
 
-        public DbSet<jmasAPI.Models.Productos> Productos { get; set; } = default!;
+        public DbSet<Productos> Productos { get; set; } = default!;
 
         public DbSet<Salidas> Salidas { get; set; } = default!;
 
@@ -102,7 +102,7 @@ namespace jmasAPI
             modelBuilder.Entity<AjustesMas>()
                 .HasOne<Productos>()
                 .WithMany()
-                .HasForeignKey(ajMasProd => ajMasProd.idProducto)
+                .HasForeignKey(ajMasProd => ajMasProd.Id_Producto)
                 .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<AjustesMas>()
@@ -115,7 +115,7 @@ namespace jmasAPI
             modelBuilder.Entity<AjustesMenos>()
                 .HasOne<Productos>()
                 .WithMany()
-                .HasForeignKey(ajMenProd => ajMenProd.idProducto)
+                .HasForeignKey(ajMenProd => ajMenProd.Id_Producto)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AjustesMenos>()

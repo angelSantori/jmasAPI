@@ -47,7 +47,7 @@ namespace jmasAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProductos(int id, Productos productos)
         {
-            if (id != productos.idProducto)
+            if (id != productos.Id_Producto)
             {
                 return BadRequest();
             }
@@ -81,7 +81,7 @@ namespace jmasAPI.Controllers
             _context.Productos.Add(productos);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProductos", new { id = productos.idProducto}, productos);
+            return CreatedAtAction("GetProductos", new { id = productos.Id_Producto}, productos);
         }
 
         // DELETE: api/Productos/5
@@ -102,7 +102,7 @@ namespace jmasAPI.Controllers
 
         private bool ProductosExists(int id)
         {
-            return _context.Productos.Any(e => e.idProducto== id);
+            return _context.Productos.Any(e => e.Id_Producto == id);
         }
     }
 }

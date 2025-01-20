@@ -5,9 +5,8 @@ namespace jmasAPI.Models
 {
     public class Productos
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int idProducto { get; set; }
+        [Key]        
+        public int Id_Producto { get; set; }
         
         [StringLength(255)]
         public string prodDescripcion { get; set; }

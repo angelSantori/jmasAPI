@@ -16,7 +16,7 @@ namespace jmasAPI.Models
         public string AjusteMas_Fecha { get; set; }        
 
         [ForeignKey("Productos")]
-        public int idProducto { get; set; }
+        public int Id_Producto { get; set; }
 
         [ForeignKey("Users")]
         public int Id_User { get; set; }
