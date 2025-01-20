@@ -1,35 +1,31 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace jmasAPI.Models
 {
     public class Productos
     {
         [Key]
-        public int Id_Producto { get; set; }
-
-        [Required]
+        public int idProducto { get; set; }
+        
         [StringLength(255)]
-        public string Producto_Descripcion { get; set; }
+        public string prodDescripcion { get; set; }
 
-        [Required]
-        public double Producto_Costo { get; set; }
+        public double prodExistencia { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Producto_UMedida { get; set; }
+        public double prodMax { get; set; }
 
-        public double? Producto_Precio1 { get; set; }
+        public double prodMin { get; set; }
+        
+        public double prodCosto { get; set; }
+                
+        public string prodUMedSalida { get; set; }
 
-        public double? Producto_Precio2 { get; set; }
+        public string prodUMedEntrada { get; set; }
 
-        public double? Producto_Precio3 { get; set; }
+        public double? prodPrecio { get; set; }
 
-        public double Producto_Existencia { get; set; }
-
-        public double Producto_ExistenciaInicial { get; set; }
-
-        public double Producto_ExistenciaConFis { get; set; }        
-
-        public string? Producto_ImgBase64 { get; set; }
+        [ForeignKey("Proveedores")]
+        public int idProveedor { get; set; }
     }
 }

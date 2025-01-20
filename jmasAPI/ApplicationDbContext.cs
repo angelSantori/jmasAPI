@@ -29,6 +29,13 @@ namespace jmasAPI
         {
             base.OnModelCreating(modelBuilder);
 
+            //PRODUCTOS relación
+            modelBuilder.Entity<Productos>()
+                .HasOne<Proveedores>()
+                .WithMany()
+                .HasForeignKey(prodProv => prodProv.idProveedor)
+                .OnDelete(DeleteBehavior.Restrict);
+
             //SALIDAS relaciones
             modelBuilder.Entity<Salidas>()
                 .HasOne<Productos>()
