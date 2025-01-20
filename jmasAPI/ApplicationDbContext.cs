@@ -40,7 +40,7 @@ namespace jmasAPI
             modelBuilder.Entity<Salidas>()
                 .HasOne<Productos>()
                 .WithMany()
-                .HasForeignKey(salProd => salProd.Id_Producto)
+                .HasForeignKey(salProd => salProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);            
 
             modelBuilder.Entity<Salidas>()
@@ -77,7 +77,7 @@ namespace jmasAPI
             modelBuilder .Entity<Entradas>()
                 .HasOne<Productos>()
                 .WithMany()
-                .HasForeignKey(entProd => entProd.Id_Producto)
+                .HasForeignKey(entProd => entProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Entradas>()
@@ -102,7 +102,7 @@ namespace jmasAPI
             modelBuilder.Entity<AjustesMas>()
                 .HasOne<Productos>()
                 .WithMany()
-                .HasForeignKey(ajMasProd => ajMasProd.Id_Producto)
+                .HasForeignKey(ajMasProd => ajMasProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<AjustesMas>()
@@ -115,7 +115,7 @@ namespace jmasAPI
             modelBuilder.Entity<AjustesMenos>()
                 .HasOne<Productos>()
                 .WithMany()
-                .HasForeignKey(ajMenProd => ajMenProd.Id_Producto)
+                .HasForeignKey(ajMenProd => ajMenProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AjustesMenos>()

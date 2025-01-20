@@ -18,7 +18,7 @@ namespace jmasAPI.Models
         public string Entrada_Fecha { get; set; }
 
         [ForeignKey("Productos")]
-        public int Id_Producto { get; set; }
+        public int idProducto { get; set; }
 
         [ForeignKey("Proveedores")]
         public int Id_Proveedor { get; set; }
