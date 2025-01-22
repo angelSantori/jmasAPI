@@ -62,6 +62,23 @@ namespace jmasAPI.Controllers
                 return BadRequest();
             }
 
+            var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id_User == id);
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
+
+            // Verifica si la contraseña fue modificada
+            if (!string.IsNullOrEmpty(users.User_Password) && users.User_Password != existingUser.User_Password)
+            {
+                users.User_Password = _passwordHasher.HashPassword(users, users.User_Password);
+            }
+            else
+            {
+                // Si no se modificó, usa la contraseña existente
+                users.User_Password = existingUser.User_Password;
+            }            
+
             _context.Entry(users).State = EntityState.Modified;
 
             try
