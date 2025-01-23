@@ -60,6 +60,24 @@ namespace jmasAPI.Controllers
             return Ok(entradas);
         }
 
+        // GET: api/Entradas/ByFolio/{folio}
+        [HttpGet("ByReferencia/{referencia}")]
+        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradasByReferencia(string referencia)
+        {
+            // Filtrar las entradas cuyo folio coincida con el valor proporcionado
+            var entradas = await _context.Entradas
+                .Where(e => e.Entrada_Referencia == referencia)
+                .ToListAsync();
+
+            // Verificar si se encontraron registros
+            if (entradas == null || entradas.Count == 0)
+            {
+                return NotFound(new { message = $"No se encontraron entradas con la referencia: {referencia}" });
+            }
+
+            return Ok(entradas);
+        }
+
         // PUT: api/Entradas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -89,25 +107,7 @@ namespace jmasAPI.Controllers
             }
 
             return NoContent();
-        }
-
-        // GET: api/Entradas/ByFolio/{folio}
-        [HttpGet("ByFolio/{folio}")]
-        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradasByFolio(string folio)
-        {
-            // Filtrar las entradas cuyo folio coincida con el valor proporcionado
-            var entradas = await _context.Entradas
-                .Where(e => e.Entrada_Referencia == folio)
-                .ToListAsync();
-
-            // Verificar si se encontraron registros
-            if (entradas == null || entradas.Count == 0)
-            {
-                return NotFound(new { message = $"No se encontraron entradas con el folio: {folio}" });
-            }
-
-            return Ok(entradas);
-        }
+        }        
 
         // POST: api/Entradas
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
