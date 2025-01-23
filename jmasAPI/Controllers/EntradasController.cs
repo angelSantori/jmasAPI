@@ -78,6 +78,21 @@ namespace jmasAPI.Controllers
             return Ok(entradas);
         }
 
+        // Get
+        [HttpGet("next-codfolio")]
+        public async Task<ActionResult<string>> GetNextCodFolio()
+        {
+            var lastEntrada = await _context.Entradas
+                .OrderByDescending(e => e.Id_Entradas)
+                .FirstOrDefaultAsync();
+
+            int nextNumber = lastEntrada != null
+                ? int.Parse(lastEntrada.Entrada_CodFolio.Replace("Ent", "")) + 1
+                : 1;
+
+            return Ok($"Ent{nextNumber}");
+        }
+
         // PUT: api/Entradas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -109,29 +124,16 @@ namespace jmasAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Entradas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/Entradas        
         [HttpPost]
         public async Task<ActionResult<Entradas>> PostEntradas(Entradas entradas)
-        {
-            //Obtener el último código de folio
-            var lastEntrada = await _context.Entradas
-                .OrderByDescending(e => e.Id_Entradas)
-                .FirstOrDefaultAsync();
-
-            //Generar el nuevo código de folio
-            int nextNumbre = lastEntrada != null
-                ? int.Parse(lastEntrada.Entrada_CodFolio.Replace("Ent", "")) + 1
-                : 1;
-
-            entradas.Entrada_CodFolio = $"Ent{nextNumbre}";
-
+        {            
             //Guardar la entrada
             _context.Entradas.Add(entradas);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetEntradas", new { id = entradas.Id_Entradas }, entradas);
-        }
+        }        
 
         // DELETE: api/Entradas/5
         [HttpDelete("{id}")]
