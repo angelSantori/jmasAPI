@@ -113,7 +113,20 @@ namespace jmasAPI.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Entradas>> PostEntradas(Entradas entradas)
-        {            
+        {
+            //Obtener el último código de folio
+            var lastEntrada = await _context.Entradas
+                .OrderByDescending(e => e.Id_Entradas)
+                .FirstOrDefaultAsync();
+
+            //Generar el nuevo código de folio
+            int nextNumbre = lastEntrada != null
+                ? int.Parse(lastEntrada.Entrada_CodFolio.Replace("Ent", "")) + 1
+                : 1;
+
+            entradas.Entrada_CodFolio = $"Ent{nextNumbre}";
+
+            //Guardar la entrada
             _context.Entradas.Add(entradas);
             await _context.SaveChangesAsync();
 
