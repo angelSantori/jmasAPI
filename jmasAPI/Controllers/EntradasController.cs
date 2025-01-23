@@ -42,6 +42,24 @@ namespace jmasAPI.Controllers
             return entradas;
         }
 
+        // GET: api/Entradas/ByCodFolio/{codFolio}
+        [HttpGet("ByCodFolio/{codFolio}")]
+        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradasByCodFolio(string codFolio)
+        {
+            // Filtrar las entradas cuyo CodFolio coincida con el valor proporcionado
+            var entradas = await _context.Entradas
+                .Where(e => e.Entrada_CodFolio == codFolio)
+                .ToListAsync();
+
+            // Verificar si se encontraron registros
+            if (entradas == null || entradas.Count == 0)
+            {
+                return NotFound(new { message = $"No se encontraron entradas con el código de folio: {codFolio}" });
+            }
+
+            return Ok(entradas);
+        }
+
         // PUT: api/Entradas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

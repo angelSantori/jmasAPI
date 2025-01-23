@@ -8,6 +8,8 @@ namespace jmasAPI.Models
         [Key]
         public int Id_Entradas { get; set; }
 
+        public string Entrada_CodFolio { get; set; }
+
         public string Entrada_Referencia { get; set; }
 
         public double Entrada_Unidades { get; set; }
