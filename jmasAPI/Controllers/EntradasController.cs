@@ -58,25 +58,7 @@ namespace jmasAPI.Controllers
             }
 
             return Ok(entradas);
-        }
-
-        // GET: api/Entradas/ByReferencia/{referencia}
-        [HttpGet("ByReferencia/{referencia}")]
-        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradasByReferencia(string referencia)
-        {
-            // Filtrar las entradas cuya referencia coincida con el valor proporcionado
-            var entradas = await _context.Entradas
-                .Where(e => e.Entrada_Referencia == referencia)
-                .ToListAsync();
-
-            // Verificar si se encontraron registros
-            if (entradas == null || entradas.Count == 0)
-            {
-                return NotFound(new { message = $"No se encontraron entradas con la referencia: {referencia}" });
-            }
-
-            return Ok(entradas);
-        }
+        }        
 
         // Get
         [HttpGet("next-codfolio")]
