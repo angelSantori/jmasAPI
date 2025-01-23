@@ -78,25 +78,13 @@ namespace jmasAPI
                 .HasOne<Productos>()
                 .WithMany()
                 .HasForeignKey(entProd => entProd.idProducto)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Entradas>()
-                .HasOne<Proveedores>()
-                .WithMany()
-                .HasForeignKey(entProv => entProv.Id_Proveedor)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Entradas>()
-                .HasOne<Users>()
-                .WithMany()
-                .HasForeignKey(entUser => entUser.Id_User)
                 .OnDelete(DeleteBehavior.Restrict);            
 
             modelBuilder.Entity<Entradas>()
                 .HasOne<Users>()
                 .WithMany()
-                .HasForeignKey(entUserReport => entUserReport.User_Reporte)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(entUser => entUser.Id_User)
+                .OnDelete(DeleteBehavior.Restrict);                        
 
             //AjustesMas relaciones
             modelBuilder.Entity<AjustesMas>()

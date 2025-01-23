@@ -79,7 +79,7 @@ namespace jmasAPI.Controllers
         {
             // Filtrar las entradas cuyo folio coincida con el valor proporcionado
             var entradas = await _context.Entradas
-                .Where(e => e.Entrada_Folio == folio)
+                .Where(e => e.Entrada_Referencia == folio)
                 .ToListAsync();
 
             // Verificar si se encontraron registros

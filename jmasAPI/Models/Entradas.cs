@@ -8,7 +8,7 @@ namespace jmasAPI.Models
         [Key]
         public int Id_Entradas { get; set; }
 
-        public string Entrada_Folio { get; set; }
+        public string Entrada_Referencia { get; set; }
 
         public double Entrada_Unidades { get; set; }
 
@@ -17,16 +17,12 @@ namespace jmasAPI.Models
         [StringLength(10)]
         public string Entrada_Fecha { get; set; }
 
+        public string? Entrada_ImgB64Factura { get; set; }
+
         [ForeignKey("Productos")]
-        public int idProducto { get; set; }
-
-        [ForeignKey("Proveedores")]
-        public int Id_Proveedor { get; set; }
+        public int idProducto { get; set; }        
 
         [ForeignKey("Users")]
-        public int Id_User { get; set; }        
-
-        [ForeignKey("Users")]
-        public int User_Reporte { get; set; }
+        public int Id_User { get; set; }                
     }
 }

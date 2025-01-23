@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jmasAPI;
 
@@ -11,9 +12,11 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250122165809_passEditUser")]
+    partial class passEditUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -322,17 +325,20 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("varchar(10)");
 
-                    b.Property<string>("Entrada_ImgB64Factura")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Entrada_Referencia")
+                    b.Property<string>("Entrada_Folio")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<double>("Entrada_Unidades")
                         .HasColumnType("double");
 
+                    b.Property<int>("Id_Proveedor")
+                        .HasColumnType("int");
+
                     b.Property<int>("Id_User")
+                        .HasColumnType("int");
+
+                    b.Property<int>("User_Reporte")
                         .HasColumnType("int");
 
                     b.Property<int>("idProducto")
@@ -340,7 +346,11 @@ namespace jmasAPI.Migrations
 
                     b.HasKey("Id_Entradas");
 
+                    b.HasIndex("Id_Proveedor");
+
                     b.HasIndex("Id_User");
+
+                    b.HasIndex("User_Reporte");
 
                     b.HasIndex("idProducto");
 
@@ -622,9 +632,21 @@ namespace jmasAPI.Migrations
 
             modelBuilder.Entity("jmasAPI.Models.Entradas", b =>
                 {
+                    b.HasOne("jmasAPI.Models.Proveedores", null)
+                        .WithMany()
+                        .HasForeignKey("Id_Proveedor")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
                         .HasForeignKey("Id_User")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("User_Reporte")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
