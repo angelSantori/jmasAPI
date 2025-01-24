@@ -23,9 +23,14 @@ namespace jmasAPI.Controllers
 
         // GET: api/Productos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Productos>>> GetProductos()
+        public async Task<ActionResult<IEnumerable<Productos>>> GetProductos(int limit = 10, int offset = 0)
         {
-            return await _context.Productos.ToListAsync();
+            var productos = await _context.Productos
+                                            .Skip(offset)
+                                            .Take(limit)
+                                            .ToListAsync();
+
+            return productos;
         }
 
         // GET: api/Productos/5
