@@ -72,7 +72,7 @@ namespace jmasAPI.Controllers
                 ? int.Parse(lastSalida.Salida_CodFolio.Replace("Sal", "")) + 1
                 : 1;
 
-            return Ok($"Ent{nextNumber}");
+            return Ok($"Sal{nextNumber}");
         }
 
         // PUT: api/Salidas/5
