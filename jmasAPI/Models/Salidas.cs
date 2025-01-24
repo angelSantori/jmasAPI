@@ -8,7 +8,9 @@ namespace jmasAPI.Models
         [Key]
         public int Id_Salida { get; set; }
 
-        public string Salida_Folio { get; set; }        
+        public string Salida_CodFolio { get; set; }
+
+        public string Salida_Referencia { get; set; }
 
         public double Salida_Unidades { get; set; }
 
@@ -18,10 +20,7 @@ namespace jmasAPI.Models
         public string Salida_Fecha { get; set; }
 
         [ForeignKey("Productos")]
-        public int idProducto { get; set; }
-
-        [ForeignKey("Proveedores")]
-        public int Id_Proveedor { get; set; }
+        public int idProducto { get; set; }        
 
         [ForeignKey("Users")]
         public int Id_User { get; set; }
@@ -30,9 +29,6 @@ namespace jmasAPI.Models
         public int Id_Junta { get; set; }
 
         [ForeignKey("Entidades")]
-        public int Id_Entidad { get; set; }
-
-        [ForeignKey("Users")]
-        public int User_Reporte { get; set; }
+        public int Id_Entidad { get; set; }        
     }
 }

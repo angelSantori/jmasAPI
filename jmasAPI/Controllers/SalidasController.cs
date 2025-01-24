@@ -48,7 +48,7 @@ namespace jmasAPI.Controllers
         {
             // Filtrar las entradas cuyo folio coincida con el valor proporcionado
             var salidas = await _context.Salidas
-                .Where(e => e.Salida_Folio == folio)
+                .Where(e => e.Salida_CodFolio == folio)
                 .ToListAsync();
 
             // Verificar si se encontraron registros
@@ -58,6 +58,21 @@ namespace jmasAPI.Controllers
             }
 
             return Ok(salidas);
+        }
+
+        //Get api/Salias/next-folio
+        [HttpGet("next-salidacodfolio")]
+        public async Task<ActionResult<string>> GetNextSalidaCodFolio()
+        {
+            var lastSalida = await _context.Salidas
+                .OrderByDescending(s => s.Id_Salida)
+                .FirstOrDefaultAsync();
+
+            int nextNumber = lastSalida != null
+                ? int.Parse(lastSalida.Salida_CodFolio.Replace("Ent", "")) + 1
+                : 1;
+
+            return Ok($"Ent{nextNumber}");
         }
 
         // PUT: api/Salidas/5
