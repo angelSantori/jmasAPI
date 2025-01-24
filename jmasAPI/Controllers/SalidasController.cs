@@ -69,7 +69,7 @@ namespace jmasAPI.Controllers
                 .FirstOrDefaultAsync();
 
             int nextNumber = lastSalida != null
-                ? int.Parse(lastSalida.Salida_CodFolio.Replace("Ent", "")) + 1
+                ? int.Parse(lastSalida.Salida_CodFolio.Replace("Sal", "")) + 1
                 : 1;
 
             return Ok($"Ent{nextNumber}");
