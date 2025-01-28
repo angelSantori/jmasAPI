@@ -20,9 +20,9 @@ namespace jmasAPI
 
         public DbSet<AjustesMas> AjustesMas { get; set; } = default!;
 
-        public DbSet<AjustesMenos> AjustesMenos { get; set; } = default!;
+        public DbSet<AjustesMenos> AjustesMenos { get; set; } = default!;        
 
-        public DbSet<Entidades> Entidades { get; set; } = default!;
+        public DbSet<Almacenes> Almacenes { get; set; } = default!;
 
         public DbSet<Juntas> Juntas { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -53,13 +53,13 @@ namespace jmasAPI
                 .HasOne<Juntas>()
                 .WithMany()
                 .HasForeignKey(salJunta => salJunta.Id_Junta)
-                .OnDelete(DeleteBehavior.Restrict);
-
+                .OnDelete(DeleteBehavior.Restrict);        
+            
             modelBuilder.Entity<Salidas>()
-                .HasOne<Entidades>()
+                .HasOne<Almacenes>()
                 .WithMany()
-                .HasForeignKey(salEntidad => salEntidad.Id_Entidad)
-                .OnDelete(DeleteBehavior.Restrict);            
+                .HasForeignKey(salAlma => salAlma.Id_Almacen)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //ENTRADAS relaciones
             modelBuilder .Entity<Entradas>()

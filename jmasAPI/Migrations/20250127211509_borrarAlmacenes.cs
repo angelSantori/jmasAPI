@@ -5,7 +5,7 @@
 namespace jmasAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class refacSalida3 : Migration
+    public partial class borrarAlmacenes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

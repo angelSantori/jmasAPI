@@ -288,22 +288,21 @@ namespace jmasAPI.Migrations
                     b.ToTable("AjustesMenos");
                 });
 
-            modelBuilder.Entity("jmasAPI.Models.Entidades", b =>
+            modelBuilder.Entity("jmasAPI.Models.Almacenes", b =>
                 {
-                    b.Property<int>("Id_Entidad")
+                    b.Property<int>("Id_Almacen")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Entidad"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Almacen"));
 
-                    b.Property<string>("Entidad_Nombre")
+                    b.Property<string>("almacen_Nombre")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("longtext");
 
-                    b.HasKey("Id_Entidad");
+                    b.HasKey("Id_Almacen");
 
-                    b.ToTable("Entidades");
+                    b.ToTable("Almacenes");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.Entradas", b =>
@@ -450,7 +449,7 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Salida"));
 
-                    b.Property<int>("Id_Entidad")
+                    b.Property<int>("Id_Almacen")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Junta")
@@ -483,7 +482,7 @@ namespace jmasAPI.Migrations
 
                     b.HasKey("Id_Salida");
 
-                    b.HasIndex("Id_Entidad");
+                    b.HasIndex("Id_Almacen");
 
                     b.HasIndex("Id_Junta");
 
@@ -639,9 +638,9 @@ namespace jmasAPI.Migrations
 
             modelBuilder.Entity("jmasAPI.Models.Salidas", b =>
                 {
-                    b.HasOne("jmasAPI.Models.Entidades", null)
+                    b.HasOne("jmasAPI.Models.Almacenes", null)
                         .WithMany()
-                        .HasForeignKey("Id_Entidad")
+                        .HasForeignKey("Id_Almacen")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

@@ -28,7 +28,7 @@ namespace jmasAPI.Models
         [ForeignKey("Juntas")]
         public int Id_Junta { get; set; }
 
-        [ForeignKey("Entidades")]
-        public int Id_Entidad { get; set; }        
+        [ForeignKey("Almacenes")]
+        public int Id_Almacen { get; set; }
     }
 }

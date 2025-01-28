@@ -12,47 +12,47 @@ namespace jmasAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EntidadesController : ControllerBase
+    public class AlmacenesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
-        public EntidadesController(ApplicationDbContext context)
+        public AlmacenesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Entidades
+        // GET: api/Almacenes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Entidades>>> GetEntidades()
+        public async Task<ActionResult<IEnumerable<Almacenes>>> GetAlmacenes()
         {
-            return await _context.Entidades.ToListAsync();
+            return await _context.Almacenes.ToListAsync();
         }
 
-        // GET: api/Entidades/5
+        // GET: api/Almacenes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Entidades>> GetEntidades(int id)
+        public async Task<ActionResult<Almacenes>> GetAlmacenes(int id)
         {
-            var entidades = await _context.Entidades.FindAsync(id);
+            var almacenes = await _context.Almacenes.FindAsync(id);
 
-            if (entidades == null)
+            if (almacenes == null)
             {
                 return NotFound();
             }
 
-            return entidades;
+            return almacenes;
         }
 
-        // PUT: api/Entidades/5
+        // PUT: api/Almacenes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEntidades(int id, Entidades entidades)
+        public async Task<IActionResult> PutAlmacenes(int id, Almacenes almacenes)
         {
-            if (id != entidades.Id_Entidad)
+            if (id != almacenes.Id_Almacen)
             {
                 return BadRequest();
             }
 
-            _context.Entry(entidades).State = EntityState.Modified;
+            _context.Entry(almacenes).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +60,7 @@ namespace jmasAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EntidadesExists(id))
+                if (!AlmacenesExists(id))
                 {
                     return NotFound();
                 }
@@ -73,36 +73,36 @@ namespace jmasAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Entidades
+        // POST: api/Almacenes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Entidades>> PostEntidades(Entidades entidades)
+        public async Task<ActionResult<Almacenes>> PostAlmacenes(Almacenes almacenes)
         {
-            _context.Entidades.Add(entidades);
+            _context.Almacenes.Add(almacenes);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEntidades", new { id = entidades.Id_Entidad }, entidades);
+            return CreatedAtAction("GetAlmacenes", new { id = almacenes.Id_Almacen }, almacenes);
         }
 
-        // DELETE: api/Entidades/5
+        // DELETE: api/Almacenes/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEntidades(int id)
+        public async Task<IActionResult> DeleteAlmacenes(int id)
         {
-            var entidades = await _context.Entidades.FindAsync(id);
-            if (entidades == null)
+            var almacenes = await _context.Almacenes.FindAsync(id);
+            if (almacenes == null)
             {
                 return NotFound();
             }
 
-            _context.Entidades.Remove(entidades);
+            _context.Almacenes.Remove(almacenes);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool EntidadesExists(int id)
+        private bool AlmacenesExists(int id)
         {
-            return _context.Entidades.Any(e => e.Id_Entidad == id);
+            return _context.Almacenes.Any(e => e.Id_Almacen == id);
         }
     }
 }
