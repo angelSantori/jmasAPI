@@ -18,6 +18,8 @@ namespace jmasAPI.Models
         public double prodMin { get; set; }
         
         public double prodCosto { get; set; }
+
+        public string prodUbFisica { get; set; }
                 
         public string prodUMedSalida { get; set; }
 

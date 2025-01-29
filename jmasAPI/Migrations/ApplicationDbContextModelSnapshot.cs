@@ -416,6 +416,10 @@ namespace jmasAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("prodUbFisica")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id_Producto");
 
                     b.HasIndex("idProveedor");

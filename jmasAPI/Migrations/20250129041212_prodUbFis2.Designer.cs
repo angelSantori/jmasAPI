@@ -12,8 +12,8 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250129034239_Nueva2")]
-    partial class Nueva2
+    [Migration("20250129041212_prodUbFis2")]
+    partial class prodUbFis2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -416,6 +416,10 @@ namespace jmasAPI.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("prodUMedSalida")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("prodUbFisica")
                         .IsRequired()
                         .HasColumnType("longtext");
 
