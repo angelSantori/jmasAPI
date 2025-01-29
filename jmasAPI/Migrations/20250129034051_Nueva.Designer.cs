@@ -12,8 +12,8 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250127211509_borrarAlmacenes")]
-    partial class borrarAlmacenes
+    [Migration("20250129034051_Nueva")]
+    partial class Nueva
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -291,6 +291,23 @@ namespace jmasAPI.Migrations
                     b.ToTable("AjustesMenos");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Almacenes", b =>
+                {
+                    b.Property<int>("Id_Almacen")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Almacen"));
+
+                    b.Property<string>("almacen_Nombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id_Almacen");
+
+                    b.ToTable("Almacenes");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Entradas", b =>
                 {
                     b.Property<int>("Id_Entradas")
@@ -339,12 +356,22 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Junta"));
 
+                    b.Property<int>("Id_User")
+                        .HasColumnType("int");
+
                     b.Property<string>("Junta_Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<string>("Junta_Telefono")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
                     b.HasKey("Id_Junta");
+
+                    b.HasIndex("Id_User");
 
                     b.ToTable("Juntas");
                 });
@@ -435,6 +462,9 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Salida"));
 
+                    b.Property<int>("Id_Almacen")
+                        .HasColumnType("int");
+
                     b.Property<int>("Id_Junta")
                         .HasColumnType("int");
 
@@ -464,6 +494,8 @@ namespace jmasAPI.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id_Salida");
+
+                    b.HasIndex("Id_Almacen");
 
                     b.HasIndex("Id_Junta");
 
@@ -608,6 +640,15 @@ namespace jmasAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Juntas", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("Id_User")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Productos", b =>
                 {
                     b.HasOne("jmasAPI.Models.Proveedores", null)
@@ -619,6 +660,12 @@ namespace jmasAPI.Migrations
 
             modelBuilder.Entity("jmasAPI.Models.Salidas", b =>
                 {
+                    b.HasOne("jmasAPI.Models.Almacenes", null)
+                        .WithMany()
+                        .HasForeignKey("Id_Almacen")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("jmasAPI.Models.Juntas", null)
                         .WithMany()
                         .HasForeignKey("Id_Junta")

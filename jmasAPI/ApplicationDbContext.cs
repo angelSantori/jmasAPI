@@ -99,6 +99,13 @@ namespace jmasAPI
                 .WithMany()
                 .HasForeignKey(ajMenUser => ajMenUser.Id_User)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            //Juntas
+            modelBuilder.Entity<Juntas>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(juntUser => juntUser.Id_User)
+                .OnDelete(DeleteBehavior.Restrict);
         }                
     }
 }
