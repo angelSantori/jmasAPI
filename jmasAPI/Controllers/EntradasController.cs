@@ -58,30 +58,36 @@ namespace jmasAPI.Controllers
             }
 
             return Ok(entradas);
-        }        
+        }
 
         // Get
         [HttpGet("next-codfolio")]
         public async Task<ActionResult<string>> GetNextCodFolio()
         {
-            var lastEntrada = await _context.Entradas
-                .OrderByDescending(e => e.Id_Entradas)
+            // Obtener el último CodFolio único
+            var lastCodFolio = await _context.Entradas
+                .Select(e => e.Entrada_CodFolio)
+                .Distinct() // Asegurarse de que solo se consideren valores únicos
+                .OrderByDescending(c => c) // Ordenar de forma descendente
                 .FirstOrDefaultAsync();
 
-            if (lastEntrada == null || string.IsNullOrEmpty(lastEntrada.Entrada_CodFolio))
+            // Si no hay entradas, comenzar desde Ent1
+            if (string.IsNullOrEmpty(lastCodFolio))
             {
                 return Ok("Ent1");
             }
 
             try
             {
-                int lastNumber = int.Parse(lastEntrada.Entrada_CodFolio.Replace("Ent", ""));
-                int nextNumber = lastNumber + 1;
-                return Ok($"Ent{nextNumber}");
+                // Extraer el número del CodFolio y convertirlo a entero
+                int lastNumber = int.Parse(lastCodFolio.Replace("Ent", ""));
+                int nextNumber = lastNumber + 1; // Incrementar el número
+                return Ok($"Ent{nextNumber}"); // Devolver el nuevo CodFolio
             }
-            catch (FormatException) {
-                return BadRequest("El formato de CodFolio no es válido");
-            }            
+            catch (FormatException)
+            {
+                return BadRequest("El formato de CodFolio no es válido.");
+            }
         }
 
         // PUT: api/Entradas/5
