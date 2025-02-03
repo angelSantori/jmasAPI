@@ -68,11 +68,20 @@ namespace jmasAPI.Controllers
                 .OrderByDescending(e => e.Id_Entradas)
                 .FirstOrDefaultAsync();
 
-            int nextNumber = lastEntrada != null
-                ? int.Parse(lastEntrada.Entrada_CodFolio.Replace("Ent", "")) + 1
-                : 1;
+            if (lastEntrada == null || string.IsNullOrEmpty(lastEntrada.Entrada_CodFolio))
+            {
+                return Ok("Ent1");
+            }
 
-            return Ok($"Ent{nextNumber}");
+            try
+            {
+                int lastNumber = int.Parse(lastEntrada.Entrada_CodFolio.Replace("Ent", ""));
+                int nextNumber = lastNumber + 1;
+                return Ok($"Ent{nextNumber}");
+            }
+            catch (FormatException) {
+                return BadRequest("El formato de CodFolio no es válido");
+            }            
         }
 
         // PUT: api/Entradas/5
