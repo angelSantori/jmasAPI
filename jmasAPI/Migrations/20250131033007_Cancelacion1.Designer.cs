@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jmasAPI;
 
@@ -11,9 +12,11 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131033007_Cancelacion1")]
+    partial class Cancelacion1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -350,9 +353,6 @@ namespace jmasAPI.Migrations
                     b.Property<double>("Entrada_Costo")
                         .HasColumnType("double");
 
-                    b.Property<bool>("Entrada_Estado")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<string>("Entrada_Fecha")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -361,12 +361,13 @@ namespace jmasAPI.Migrations
                     b.Property<string>("Entrada_ImgB64Factura")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Entrada_Referencia")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<double>("Entrada_Unidades")
                         .HasColumnType("double");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<int>("Id_User")
                         .HasColumnType("int");

@@ -25,6 +25,9 @@ namespace jmasAPI
         public DbSet<Almacenes> Almacenes { get; set; } = default!;
 
         public DbSet<Juntas> Juntas { get; set; } = default!;
+
+        public DbSet<Cancelado> Cancelado { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -105,6 +108,19 @@ namespace jmasAPI
                 .HasOne<Users>()
                 .WithMany()
                 .HasForeignKey(juntUser => juntUser.Id_User)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Cancelado
+            modelBuilder.Entity<Cancelado>()
+                .HasOne<Entradas>()
+                .WithMany() 
+                .HasForeignKey(cancelEntrada => cancelEntrada.Id_Entrada)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Cancelado>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(cancelUser => cancelUser.Id_User)
                 .OnDelete(DeleteBehavior.Restrict);
         }                
     }
