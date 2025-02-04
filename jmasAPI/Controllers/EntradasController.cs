@@ -60,34 +60,28 @@ namespace jmasAPI.Controllers
             return Ok(entradas);
         }
 
-        // Get
+        // Get siguiente código de folio
         [HttpGet("next-codfolio")]
         public async Task<ActionResult<string>> GetNextCodFolio()
         {
-            // Obtener el último CodFolio único
-            var lastCodFolio = await _context.Entradas
+            // Get all unique CodFolios
+            var codFolios = await _context.Entradas
+                .Where(e => !string.IsNullOrEmpty(e.Entrada_CodFolio))
                 .Select(e => e.Entrada_CodFolio)
-                .Distinct() // Asegurarse de que solo se consideren valores únicos
-                .OrderByDescending(c => c) // Ordenar de forma descendente
-                .FirstOrDefaultAsync();
+                .Distinct()
+                .ToListAsync();
 
-            // Si no hay entradas, comenzar desde Ent1
-            if (string.IsNullOrEmpty(lastCodFolio))
-            {
-                return Ok("Ent1");
-            }
+            // Parse the CodFolios to integers
+            var codFolioNumbers = codFolios
+                .Select(c => int.Parse(c.Replace("Ent", "")))
+                .OrderByDescending(n => n)
+                .ToList();
 
-            try
-            {
-                // Extraer el número del CodFolio y convertirlo a entero
-                int lastNumber = int.Parse(lastCodFolio.Replace("Ent", ""));
-                int nextNumber = lastNumber + 1; // Incrementar el número
-                return Ok($"Ent{nextNumber}"); // Devolver el nuevo CodFolio
-            }
-            catch (FormatException)
-            {
-                return BadRequest("El formato de CodFolio no es válido.");
-            }
+            // Get the last number or start from 0 if there are no entries
+            int lastNumber = codFolioNumbers.FirstOrDefault();
+            int nextNumber = lastNumber + 1;
+
+            return Ok($"Ent{nextNumber}");
         }
 
         // PUT: api/Entradas/5
