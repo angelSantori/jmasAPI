@@ -30,6 +30,8 @@ namespace jmasAPI
 
         public DbSet<CapturaInvIni> CapturaInvIni { get; set; } = default!;
 
+        public DbSet<Padron> Padron { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
