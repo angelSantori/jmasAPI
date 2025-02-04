@@ -28,6 +28,8 @@ namespace jmasAPI
 
         public DbSet<Cancelado> Cancelado { get; set; } = default!;
 
+        public DbSet<CapturaInvIni> CapturaInvIni { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -122,6 +124,19 @@ namespace jmasAPI
                 .WithMany()
                 .HasForeignKey(cancelUser => cancelUser.Id_User)
                 .OnDelete(DeleteBehavior.Restrict);
-        }                
+
+            //CapturaInvIni
+            modelBuilder.Entity<CapturaInvIni>()
+                .HasOne<Productos>()
+                .WithMany()
+                .HasForeignKey(invInProd => invInProd.Id_Producto)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CapturaInvIni>()
+                .HasOne<Almacenes>()
+                .WithMany()
+                .HasForeignKey(invInAlm => invInAlm.Id_Almacen)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }
