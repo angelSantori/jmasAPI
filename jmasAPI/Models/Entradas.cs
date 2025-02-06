@@ -27,6 +27,9 @@ namespace jmasAPI.Models
         public int idProducto { get; set; }        
 
         [ForeignKey("Users")]
-        public int Id_User { get; set; }                
+        public int Id_User { get; set; }
+
+        [ForeignKey("Almacenes")]
+        public int Id_Almacen { get; set; }
     }
 }
