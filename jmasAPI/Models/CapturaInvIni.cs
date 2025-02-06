@@ -8,7 +8,7 @@ namespace jmasAPI.Models
         [Key]
         public int idInvIni { get; set; }
 
-        public string invIniFehca { get; set; }
+        public string invIniFecha { get; set; }
 
         public double invIniConteo { get; set; }
 
