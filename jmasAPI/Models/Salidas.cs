@@ -30,5 +30,8 @@ namespace jmasAPI.Models
 
         [ForeignKey("Almacenes")]
         public int Id_Almacen { get; set; }
+
+        [ForeignKey("Users")]
+        public int Id_User_Asignado { get; set; }
     }
 }

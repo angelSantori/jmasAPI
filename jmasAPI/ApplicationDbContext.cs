@@ -68,6 +68,12 @@ namespace jmasAPI
                 .HasForeignKey(salAlma => salAlma.Id_Almacen)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Salidas>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(salUserAsig => salUserAsig.Id_User_Asignado)
+                .OnDelete(DeleteBehavior.Restrict);
+
             //ENTRADAS relaciones
             modelBuilder .Entity<Entradas>()
                 .HasOne<Productos>()
