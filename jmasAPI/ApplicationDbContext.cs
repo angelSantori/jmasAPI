@@ -74,6 +74,12 @@ namespace jmasAPI
                 .HasForeignKey(salUserAsig => salUserAsig.Id_User_Asignado)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Salidas>()
+                .HasOne<Padron>()
+                .WithMany()
+                .HasForeignKey(salPadron => salPadron.idPadron)
+                .OnDelete(DeleteBehavior.Restrict);
+
             //ENTRADAS relaciones
             modelBuilder .Entity<Entradas>()
                 .HasOne<Productos>()
@@ -91,6 +97,12 @@ namespace jmasAPI
                 .HasOne<Almacenes>()
                 .WithMany()
                 .HasForeignKey(entAlm => entAlm.Id_Almacen)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Entradas>()
+                .HasOne<Proveedores>()
+                .WithMany()
+                .HasForeignKey(entrProve => entrProve.Id_Proveedor)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //AjustesMas relaciones

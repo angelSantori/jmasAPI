@@ -31,5 +31,8 @@ namespace jmasAPI.Models
 
         [ForeignKey("Almacenes")]
         public int Id_Almacen { get; set; }
+
+        [ForeignKey("Proveedores")]
+        public int Id_Proveedor { get; set; }
     }
 }
