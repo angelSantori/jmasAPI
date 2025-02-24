@@ -34,7 +34,7 @@ namespace jmasAPI
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);            
 
             //PRODUCTOS relación
             modelBuilder.Entity<Productos>()
