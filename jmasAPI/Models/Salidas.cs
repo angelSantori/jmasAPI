@@ -18,6 +18,9 @@ namespace jmasAPI.Models
 
         [StringLength(10)]
         public string Salida_Fecha { get; set; }
+        
+        [StringLength(10)]
+        public string Salida_TipoTrabajo { get; set; }
 
         [ForeignKey("Productos")]
         public int idProducto { get; set; }        

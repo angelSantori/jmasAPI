@@ -20,7 +20,6 @@ namespace jmasAPI.Migrations
                 .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8", DelegationModes.ApplyToAll);
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -590,6 +589,11 @@ namespace jmasAPI.Migrations
                     b.Property<string>("Salida_Referencia")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<string>("Salida_TipoTrabajo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<double>("Salida_Unidades")
                         .HasColumnType("double");

@@ -12,8 +12,8 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250223203413_base15")]
-    partial class base15
+    [Migration("20250225205324_salidaTipoTrab")]
+    partial class salidaTipoTrab
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,7 +23,6 @@ namespace jmasAPI.Migrations
                 .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8", DelegationModes.ApplyToAll);
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -593,6 +592,11 @@ namespace jmasAPI.Migrations
                     b.Property<string>("Salida_Referencia")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<string>("Salida_TipoTrabajo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<double>("Salida_Unidades")
                         .HasColumnType("double");
