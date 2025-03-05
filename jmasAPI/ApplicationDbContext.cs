@@ -32,6 +32,8 @@ namespace jmasAPI
 
         public DbSet<Padron> Padron { get; set; } = default!;
 
+        public DbSet<CContable> CContable { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);            
@@ -162,6 +164,13 @@ namespace jmasAPI
                 .HasOne<Almacenes>()
                 .WithMany()
                 .HasForeignKey(invInAlm => invInAlm.Id_Almacen)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //CContable
+            modelBuilder.Entity<CContable>()
+                .HasOne<Productos>()
+                .WithMany()
+                .HasForeignKey(ccontableProd => ccontableProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

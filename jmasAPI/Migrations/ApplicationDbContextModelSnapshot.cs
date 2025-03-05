@@ -305,6 +305,36 @@ namespace jmasAPI.Migrations
                     b.ToTable("Almacenes");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.CContable", b =>
+                {
+                    b.Property<int>("Id_CConTable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_CConTable"));
+
+                    b.Property<string>("CC_CVEPROD")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("CC_Cuenta")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CC_Detalle")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("CC_SCTA")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idProducto")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id_CConTable");
+
+                    b.HasIndex("idProducto");
+
+                    b.ToTable("CContable");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Cancelado", b =>
                 {
                     b.Property<int>("idCancelacion")
@@ -736,6 +766,15 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
                         .HasForeignKey("Id_User")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.CContable", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Productos", null)
+                        .WithMany()
+                        .HasForeignKey("idProducto")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

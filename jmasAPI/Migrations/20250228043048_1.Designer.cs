@@ -12,8 +12,8 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250225205324_salidaTipoTrab")]
-    partial class salidaTipoTrab
+    [Migration("20250228043048_1")]
+    partial class _1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -595,8 +595,8 @@ namespace jmasAPI.Migrations
 
                     b.Property<string>("Salida_TipoTrabajo")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar(10)");
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar(25)");
 
                     b.Property<double>("Salida_Unidades")
                         .HasColumnType("double");
