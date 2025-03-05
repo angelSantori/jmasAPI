@@ -15,7 +15,7 @@ namespace jmasAPI.Models
 
         public string? CC_Detalle { get; set; }
 
-        public string? CC_CVEPROD { get; set; }
+        public long? CC_CVEPROD { get; set; }
 
         [ForeignKey("Productos")]
         public int idProducto { get; set; }
