@@ -42,6 +42,16 @@ namespace jmasAPI.Controllers
             return productos;
         }
 
+        //Ger api/ConrultaUniversal/5
+        [HttpGet("ConsultaUniversal/{idProducto}")]
+        public async Task<IActionResult> ConsultaUniversal(int idProducto)
+        {
+            var entradas = await _context.Entradas.Where(e => e.idProducto == idProducto).ToListAsync();
+            var salidas = await _context.Salidas.Where(s => s.idProducto == idProducto).ToListAsync();
+
+            return Ok(new { entradas, salidas });
+        }
+
         // PUT: api/Productos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
