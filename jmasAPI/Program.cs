@@ -36,7 +36,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
     //new MySqlServerVersion(new Version(11, 7, 2)),
-    new MySqlServerVersion(new Version(11, 5, 2)),
+    new MySqlServerVersion(new Version(8, 0, 41)),
     mySqlOptions => mySqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null)));
 
 
