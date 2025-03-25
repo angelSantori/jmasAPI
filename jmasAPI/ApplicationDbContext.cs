@@ -32,7 +32,9 @@ namespace jmasAPI
 
         public DbSet<Padron> Padron { get; set; } = default!;
 
-        public DbSet<CContable> CContable { get; set; } = default!;
+        public DbSet<CContable> CContable { get; set; } = default!;        
+
+        public DbSet<CanceladoSalida> CanceladoSalida { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +45,12 @@ namespace jmasAPI
                 .HasOne<Proveedores>()
                 .WithMany()
                 .HasForeignKey(prodProv => prodProv.idProveedor)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Productos>()
+                .HasOne<Almacenes>()
+                .WithMany()
+                .HasForeignKey(prodAlm => prodAlm.Id_Almacen)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //SALIDAS relaciones
@@ -80,7 +88,7 @@ namespace jmasAPI
                 .HasOne<Padron>()
                 .WithMany()
                 .HasForeignKey(salPadron => salPadron.idPadron)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);            
 
             //ENTRADAS relaciones
             modelBuilder .Entity<Entradas>()
@@ -106,6 +114,12 @@ namespace jmasAPI
                 .WithMany()
                 .HasForeignKey(entrProve => entrProve.Id_Proveedor)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Entradas>()
+                .HasOne<Juntas>()
+                .WithMany()
+                .HasForeignKey(entrJun => entrJun.Id_Junta)
+                .OnDelete(DeleteBehavior.Restrict);            
 
             //AjustesMas relaciones
             modelBuilder.Entity<AjustesMas>()
@@ -151,6 +165,19 @@ namespace jmasAPI
                 .HasOne<Users>()
                 .WithMany()
                 .HasForeignKey(cancelUser => cancelUser.Id_User)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Cancelado Salida
+            modelBuilder.Entity<CanceladoSalida>()
+                .HasOne<Salidas>()
+                .WithMany()
+                .HasForeignKey(cancelSalidaSalida => cancelSalidaSalida.Id_Salida)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CanceladoSalida>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(cancelSalidaUser => cancelSalidaUser.Id_User)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //CapturaInvIni
