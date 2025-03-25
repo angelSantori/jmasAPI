@@ -12,11 +12,12 @@ namespace jmasAPI.Models
 
         public string Salida_Referencia { get; set; }
 
+        public bool Salida_Estado { get; set; }
+
         public double Salida_Unidades { get; set; }
 
         public double Salida_Costo { get; set; }
-
-        [StringLength(10)]
+        
         public string Salida_Fecha { get; set; }
         
         [StringLength(25)]
@@ -38,6 +39,6 @@ namespace jmasAPI.Models
         public int Id_User_Asignado { get; set; }
 
         [ForeignKey("Padron")]
-        public int idPadron { get; set; }
+        public int idPadron { get; set; }        
     }
 }
