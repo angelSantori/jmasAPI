@@ -19,7 +19,7 @@ namespace jmasAPI.Models
         
         public double prodCosto { get; set; }
 
-        public string prodUbFisica { get; set; }
+        public string? prodUbFisica { get; set; }
                 
         public string prodUMedSalida { get; set; }
 
@@ -27,9 +27,12 @@ namespace jmasAPI.Models
 
         public double prodPrecio { get; set; }
 
-        public string prodImgB64 { get; set; }
+        public string? prodImgB64 { get; set; }
 
         [ForeignKey("Proveedores")]
         public int idProveedor { get; set; }
+
+        [ForeignKey("Almacenes")]
+        public int? Id_Almacen { get; set; }
     }
 }
