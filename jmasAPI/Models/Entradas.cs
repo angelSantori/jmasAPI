@@ -18,7 +18,7 @@ namespace jmasAPI.Models
 
         public double Entrada_Costo { get; set; }
 
-        [StringLength(10)]
+        [StringLength(250)]
         public string Entrada_Fecha { get; set; }
 
         public string? Entrada_ImgB64Factura { get; set; }
@@ -34,5 +34,8 @@ namespace jmasAPI.Models
 
         [ForeignKey("Proveedores")]
         public int Id_Proveedor { get; set; }
+
+        [ForeignKey("Juntas")]
+        public int Id_Junta { get; set; }        
     }
 }
