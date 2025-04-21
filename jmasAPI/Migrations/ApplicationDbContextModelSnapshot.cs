@@ -517,6 +517,119 @@ namespace jmasAPI.Migrations
                     b.ToTable("Juntas");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.LectEnviar", b =>
+                {
+                    b.Property<int>("idLectEnviar")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idLectEnviar"));
+
+                    b.Property<string>("colonia")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("conteo")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("contrato")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("cuenta")
+                        .HasColumnType("int");
+
+                    b.Property<string>("direccion")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("estado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("feccor")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("fecven")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("felean")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("idProblema")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<string>("img64")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("junta")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("leansn")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("varchar(5)");
+
+                    b.Property<byte>("lecact")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<int?>("lecant")
+                        .HasColumnType("int");
+
+                    b.Property<string>("lecturista")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("medidor")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("mesade")
+                        .HasColumnType("int");
+
+                    b.Property<string>("nombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("observ")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("promedio")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ruta")
+                        .HasColumnType("int");
+
+                    b.Property<string>("servicio")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("varchar(5)");
+
+                    b.Property<string>("tarifa")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("varchar(5)");
+
+                    b.Property<string>("ubicacion")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("zona")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("varchar(5)");
+
+                    b.HasKey("idLectEnviar");
+
+                    b.HasIndex("idProblema");
+
+                    b.ToTable("LectEnviar");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Padron", b =>
                 {
                     b.Property<int>("idPadron")
@@ -536,6 +649,24 @@ namespace jmasAPI.Migrations
                     b.HasKey("idPadron");
 
                     b.ToTable("Padron");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.ProblemasLectura", b =>
+                {
+                    b.Property<int>("idProblema")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idProblema"));
+
+                    b.Property<string>("descripcionProb")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("idProblema");
+
+                    b.ToTable("ProblemasLectura");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.Productos", b =>
@@ -640,7 +771,7 @@ namespace jmasAPI.Migrations
                     b.Property<int>("Id_User")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id_User_Asignado")
+                    b.Property<int?>("Id_User_Asignado")
                         .HasColumnType("int");
 
                     b.Property<string>("Salida_CodFolio")
@@ -662,14 +793,13 @@ namespace jmasAPI.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Salida_TipoTrabajo")
-                        .IsRequired()
                         .HasMaxLength(25)
                         .HasColumnType("varchar(25)");
 
                     b.Property<double>("Salida_Unidades")
                         .HasColumnType("double");
 
-                    b.Property<int>("idPadron")
+                    b.Property<int?>("idPadron")
                         .HasColumnType("int");
 
                     b.Property<int>("idProducto")
@@ -907,6 +1037,14 @@ namespace jmasAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.LectEnviar", b =>
+                {
+                    b.HasOne("jmasAPI.Models.ProblemasLectura", null)
+                        .WithMany()
+                        .HasForeignKey("idProblema")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Productos", b =>
                 {
                     b.HasOne("jmasAPI.Models.Almacenes", null)
@@ -944,14 +1082,12 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
                         .HasForeignKey("Id_User_Asignado")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Padron", null)
                         .WithMany()
                         .HasForeignKey("idPadron")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
