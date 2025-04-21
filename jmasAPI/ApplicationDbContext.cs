@@ -36,9 +36,19 @@ namespace jmasAPI
 
         public DbSet<CanceladoSalida> CanceladoSalida { get; set; } = default!;
 
+        public DbSet<LectEnviar> LectEnviars { get; set; } = default!;
+
+        public DbSet<ProblemasLectura> ProblemasLectura { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);            
+            base.OnModelCreating(modelBuilder);
+            
+            //LECTURAS
+            modelBuilder.Entity<LectEnviar>()
+                .HasOne<ProblemasLectura>()
+                .WithMany()
+                .HasForeignKey(lectProb => lectProb.idProblema)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //PRODUCTOS relación
             modelBuilder.Entity<Productos>()
@@ -199,6 +209,6 @@ namespace jmasAPI
                 .WithMany()
                 .HasForeignKey(ccontableProd => ccontableProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);
-        }
+        }        
     }
 }
