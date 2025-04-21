@@ -21,7 +21,7 @@ namespace jmasAPI.Models
         public string Salida_Fecha { get; set; }
         
         [StringLength(25)]
-        public string Salida_TipoTrabajo { get; set; }
+        public string? Salida_TipoTrabajo { get; set; }
 
         [ForeignKey("Productos")]
         public int idProducto { get; set; }        
@@ -36,9 +36,9 @@ namespace jmasAPI.Models
         public int Id_Almacen { get; set; }
 
         [ForeignKey("Users")]
-        public int Id_User_Asignado { get; set; }
+        public int? Id_User_Asignado { get; set; }
 
         [ForeignKey("Padron")]
-        public int idPadron { get; set; }        
+        public int? idPadron { get; set; }        
     }
 }
