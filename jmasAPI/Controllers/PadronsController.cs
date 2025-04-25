@@ -42,6 +42,55 @@ namespace jmasAPI.Controllers
             return padron;
         }
 
+        // GET: api/Padrons/BuscarPorNombre?nombre={nombre}
+        [HttpGet("BuscarPorNombre")]
+        public async Task<ActionResult<IEnumerable<Padron>>> BuscarPorNombre([FromQuery] string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                return BadRequest("El parámetro 'nombre' es requerido");
+            }
+
+            return await _context.Padron
+                .Where(p => p.padronNombre != null &&
+                            p.padronNombre.ToLower().Contains(nombre.ToLower()))
+                .Take(10)
+                .ToListAsync();
+        }
+
+        // GET: api/Padrons/BuscarPorDireccion?direccion={direccion}
+        [HttpGet("BuscarPorDireccion")]
+        public async Task<ActionResult<IEnumerable<Padron>>> BuscarPorDireccion([FromQuery] string direccion)
+        {
+            if (string.IsNullOrWhiteSpace(direccion))
+            {
+                return BadRequest("El parámetro 'direccion' es requerido");
+            }
+            return await _context.Padron
+                .Where(p => p.padronDireccion != null &&
+                            p.padronDireccion.ToLower().Contains(direccion.ToLower()))
+                .Take(10)
+                .ToListAsync();
+        }
+
+        // GET: api/Padrons/Buscar?termino={termino}
+        [HttpGet("Buscar")]
+        public async Task<ActionResult<IEnumerable<Padron>>> Buscar([FromQuery] string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+            {
+                return BadRequest("El parámetro 'termino' es requerido");
+            }
+
+            var terminoLower = termino.ToLower();
+
+            return await _context.Padron
+                .Where(p => (p.padronNombre != null && p.padronNombre.ToLower().Contains(terminoLower)) ||
+                           (p.padronDireccion != null && p.padronDireccion.ToLower().Contains(terminoLower)))
+                .Take(10)
+                .ToListAsync();
+        }
+
         // PUT: api/Padrons/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
