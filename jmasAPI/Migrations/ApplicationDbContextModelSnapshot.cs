@@ -528,7 +528,7 @@ namespace jmasAPI.Migrations
                     b.Property<string>("colonia")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("conteo")
+                    b.Property<int?>("conteo")
                         .HasColumnType("int");
 
                     b.Property<int?>("contrato")
@@ -615,7 +615,6 @@ namespace jmasAPI.Migrations
                         .HasColumnType("varchar(5)");
 
                     b.Property<string>("ubicacion")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("zona")

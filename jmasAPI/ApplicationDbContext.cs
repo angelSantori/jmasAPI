@@ -36,7 +36,7 @@ namespace jmasAPI
 
         public DbSet<CanceladoSalida> CanceladoSalida { get; set; } = default!;
 
-        public DbSet<LectEnviar> LectEnviars { get; set; } = default!;
+        public DbSet<LectEnviar> LectEnviar { get; set; } = default!;
 
         public DbSet<ProblemasLectura> ProblemasLectura { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
