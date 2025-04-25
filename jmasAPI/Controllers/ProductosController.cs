@@ -52,6 +52,56 @@ namespace jmasAPI.Controllers
             return Ok(new { entradas, salidas });
         }
 
+        // GET: api/Productos/BuscarPorNombre?nombre={nombre}
+        [HttpGet("BuscarPorNombre")]
+        public async Task<ActionResult<IEnumerable<Productos>>> BuscarProductosPorNombre([FromQuery] string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                return BadRequest("El parámetro 'nombre' es requerido");
+            }
+
+            try
+            {
+                var productos = await _context.Productos
+                    .Where(p => p.prodDescripcion != null &&
+                                p.prodDescripcion.ToLower().Contains(nombre.ToLower()))
+                    .Take(10) // Limitar resultados para mejor performance
+                    .ToListAsync();
+
+                return Ok(productos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        // GET: api/Productos/ConDeficit
+        [HttpGet("ConDeficit")]
+        public async Task<ActionResult<IEnumerable<Productos>>> GetProductoConDeficit()
+        {
+            return await _context.Productos
+                .Where(p => p.prodExistencia < p.prodMin)
+                .ToListAsync();
+        }
+
+        // GET: api/Productos/PorRango?idInicial=1&idFinal=100
+        [HttpGet("PorRango")]
+        public async Task<ActionResult<IEnumerable<Productos>>> GetProductosPorRango(
+            [FromQuery] int idInicial,
+            [FromQuery] int idFinal)
+        {
+            if (idInicial > idFinal)
+            {
+                return BadRequest("El ID inicial no puede ser mayor que el ID final");
+            }
+            return await _context.Productos
+                .Where(p => p.Id_Producto >= idInicial && p.Id_Producto<= idFinal)
+                .OrderBy(p => p.Id_Producto)
+                .ToListAsync();
+        }
+
         // PUT: api/Productos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
