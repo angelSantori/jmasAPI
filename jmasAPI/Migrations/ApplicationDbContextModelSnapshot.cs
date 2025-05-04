@@ -335,6 +335,22 @@ namespace jmasAPI.Migrations
                     b.ToTable("CContable");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Calle", b =>
+                {
+                    b.Property<int>("idCalle")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idCalle"));
+
+                    b.Property<string>("calleNombre")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idCalle");
+
+                    b.ToTable("Calle");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Cancelado", b =>
                 {
                     b.Property<int>("idCancelacion")
@@ -425,6 +441,22 @@ namespace jmasAPI.Migrations
                     b.HasIndex("Id_Producto");
 
                     b.ToTable("CapturaInvIni");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.Colonia", b =>
+                {
+                    b.Property<int>("idColonia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idColonia"));
+
+                    b.Property<string>("nombreColonia")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idColonia");
+
+                    b.ToTable("Colonia");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.Entradas", b =>
@@ -798,6 +830,12 @@ namespace jmasAPI.Migrations
                     b.Property<double>("Salida_Unidades")
                         .HasColumnType("double");
 
+                    b.Property<int?>("idCalle")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("idColonia")
+                        .HasColumnType("int");
+
                     b.Property<int?>("idPadron")
                         .HasColumnType("int");
 
@@ -813,6 +851,10 @@ namespace jmasAPI.Migrations
                     b.HasIndex("Id_User");
 
                     b.HasIndex("Id_User_Asignado");
+
+                    b.HasIndex("idCalle");
+
+                    b.HasIndex("idColonia");
 
                     b.HasIndex("idPadron");
 
@@ -1081,6 +1123,16 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
                         .HasForeignKey("Id_User_Asignado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Calle", null)
+                        .WithMany()
+                        .HasForeignKey("idCalle")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Colonia", null)
+                        .WithMany()
+                        .HasForeignKey("idColonia")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Padron", null)

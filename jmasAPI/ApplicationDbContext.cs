@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using jmasAPI.Models;
 
 namespace jmasAPI
-{
+{   
     public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -39,6 +39,11 @@ namespace jmasAPI
         public DbSet<LectEnviar> LectEnviar { get; set; } = default!;
 
         public DbSet<ProblemasLectura> ProblemasLectura { get; set; } = default!;
+
+        public DbSet<Calle> Calle { get; set; } = default!;
+
+        public DbSet<Colonia> Colonia { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -98,7 +103,19 @@ namespace jmasAPI
                 .HasOne<Padron>()
                 .WithMany()
                 .HasForeignKey(salPadron => salPadron.idPadron)
-                .OnDelete(DeleteBehavior.Restrict);            
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Salidas>()
+                .HasOne<Calle>()
+                .WithMany()
+                .HasForeignKey(salCalle => salCalle.idCalle)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Salidas>()
+                .HasOne<Colonia>()
+                .WithMany()
+                .HasForeignKey(salColonia  => salColonia.idColonia)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //ENTRADAS relaciones
             modelBuilder .Entity<Entradas>()
