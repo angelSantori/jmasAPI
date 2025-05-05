@@ -66,7 +66,7 @@ namespace jmasAPI.Controllers
                 var productos = await _context.Productos
                     .Where(p => p.prodDescripcion != null &&
                                 p.prodDescripcion.ToLower().Contains(nombre.ToLower()))
-                    .Take(10) // Limitar resultados para mejor performance
+                    .Take(30)
                     .ToListAsync();
 
                 return Ok(productos);
