@@ -44,9 +44,25 @@ namespace jmasAPI
 
         public DbSet<Colonia> Colonia { get; set; } = default!;
 
+        public DbSet<Herramienta> Herramienta { get; set; } = default!;
+
+        public DbSet<htaPrestamo> htaPrestamo { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            //htaPrestamo
+            modelBuilder.Entity<htaPrestamo>()
+                .HasOne<Herramienta>()
+                .WithMany()
+                .HasForeignKey(prestamo => prestamo.idHerramienta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<htaPrestamo>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(prestamo => prestamo.Id_User)
+                .OnDelete(DeleteBehavior.Restrict);
             
             //LECTURAS
             modelBuilder.Entity<LectEnviar>()
