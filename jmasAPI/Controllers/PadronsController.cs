@@ -54,7 +54,7 @@ namespace jmasAPI.Controllers
             return await _context.Padron
                 .Where(p => p.padronNombre != null &&
                             p.padronNombre.ToLower().Contains(nombre.ToLower()))
-                .Take(10)
+                .Take(30)
                 .ToListAsync();
         }
 
@@ -69,7 +69,7 @@ namespace jmasAPI.Controllers
             return await _context.Padron
                 .Where(p => p.padronDireccion != null &&
                             p.padronDireccion.ToLower().Contains(direccion.ToLower()))
-                .Take(10)
+                .Take(30)
                 .ToListAsync();
         }
 
@@ -87,7 +87,7 @@ namespace jmasAPI.Controllers
             return await _context.Padron
                 .Where(p => (p.padronNombre != null && p.padronNombre.ToLower().Contains(terminoLower)) ||
                            (p.padronDireccion != null && p.padronDireccion.ToLower().Contains(terminoLower)))
-                .Take(10)
+                .Take(30)
                 .ToListAsync();
         }
 

@@ -53,7 +53,7 @@ namespace jmasAPI.Controllers
             return await _context.Colonia
                 .Where(colonia => colonia.nombreColonia != null &&
                             colonia.nombreColonia.ToLower().Contains(nombreColonia.ToLower()))
-                .Take(10)
+                .Take(30)
                 .ToListAsync();
         }
 
