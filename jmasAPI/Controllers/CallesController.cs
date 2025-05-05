@@ -42,6 +42,21 @@ namespace jmasAPI.Controllers
             return calle;
         }
 
+        // GET: api/Calles/BuscarPorNombre?nombre={nombre}
+        [HttpGet("BuscarPorNombre")]
+        public async Task<ActionResult<IEnumerable<Calle>>> BuscarPorNombre([FromQuery] string nombreCalle)
+        {
+            if (string.IsNullOrWhiteSpace(nombreCalle))
+            {
+                return BadRequest("El párametro 'nombreCalle' es requerido");
+            }
+            return await _context.Calle
+                .Where(calle => calle.calleNombre != null &&
+                                calle.calleNombre.ToLower().Contains(nombreCalle.ToLower()))
+                .Take(30)
+                .ToListAsync();
+        }
+
         // PUT: api/Calles/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
