@@ -47,9 +47,18 @@ namespace jmasAPI
         public DbSet<Herramienta> Herramienta { get; set; } = default!;
 
         public DbSet<htaPrestamo> htaPrestamo { get; set; } = default!;
+
+        public DbSet<Role> Role { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            //User
+            modelBuilder.Entity<Users>()
+                .HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(user => user.idRole)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //htaPrestamo
             modelBuilder.Entity<htaPrestamo>()

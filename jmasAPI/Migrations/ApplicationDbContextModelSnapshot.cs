@@ -806,6 +806,45 @@ namespace jmasAPI.Migrations
                     b.ToTable("Proveedores");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Role", b =>
+                {
+                    b.Property<int>("idRole")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idRole"));
+
+                    b.Property<bool>("canAdd")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canEdit")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageRoles")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageUsers")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canView")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("roleDescr")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("roleNombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idRole");
+
+                    b.ToTable("Role");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Salidas", b =>
                 {
                     b.Property<int>("Id_Salida")
@@ -917,7 +956,17 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<int?>("idRole")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("roleidRole")
+                        .HasColumnType("int");
+
                     b.HasKey("Id_User");
+
+                    b.HasIndex("idRole");
+
+                    b.HasIndex("roleidRole");
 
                     b.ToTable("Users");
                 });
@@ -1197,6 +1246,20 @@ namespace jmasAPI.Migrations
                         .HasForeignKey("idProducto")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.Users", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Role", null)
+                        .WithMany()
+                        .HasForeignKey("idRole")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Role", "role")
+                        .WithMany()
+                        .HasForeignKey("roleidRole");
+
+                    b.Navigation("role");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.htaPrestamo", b =>
