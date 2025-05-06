@@ -27,5 +27,10 @@ namespace jmasAPI.Models
 
         [StringLength(50)]
         public string User_Rol {  get; set; }
+
+        [ForeignKey("Role")]
+        public int? idRole { get; set; }
+
+        public Role? role { get; set; }
     }
 }

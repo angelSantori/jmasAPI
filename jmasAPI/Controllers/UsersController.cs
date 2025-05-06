@@ -124,29 +124,55 @@ namespace jmasAPI.Controllers
             return CreatedAtAction("GetUsers", new { id = users.Id_User }, users);
         }
 
-        //Inicio de sesión
-        //Login
+        //Inicio de sesión Login        
         public class LoginRequest
         {
             public string UserAccess { get; set; }
             public string UserPassword { get; set; }
         }
-        
+
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.User_Access == loginRequest.UserAccess);
+            var user = await _context.Users
+                .Include(u => u.role)
+                .FirstOrDefaultAsync(u => u.User_Access == loginRequest.UserAccess);
+
             if (user == null)
                 return Unauthorized("Usuario o contraseña incorrectos.");
 
-            //Validar contraseña
+            // Validar contraseña
             var result = _passwordHasher.VerifyHashedPassword(user, user.User_Password, loginRequest.UserPassword);
             if (result != PasswordVerificationResult.Success)
                 return Unauthorized("Usuario o contraseña incorrectos.");
 
-            //Generar el token JWT
+            // Generar el token JWT con información del rol
             var token = GenerateJwtToken(user);
-            return Ok(new { token });
+
+            return Ok(new
+            {
+                token,
+                user = new
+                {
+                    user.Id_User,
+                    user.User_Name,
+                    user.User_Contacto,
+                    user.User_Access,
+                    user.idRole,
+                    role = user.role != null ? new
+                    {
+                        user.role.idRole,
+                        user.role.roleNombre,
+                        user.role.roleDescr,
+                        user.role.canView,
+                        user.role.canAdd,
+                        user.role.canEdit,
+                        user.role.canDelete,
+                        user.role.canManageUsers,
+                        user.role.canManageRoles
+                    } : null
+                }
+            });
         }
 
         private string GenerateJwtToken(Users users) 
