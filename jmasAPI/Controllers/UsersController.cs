@@ -35,14 +35,16 @@ namespace jmasAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.Include(u => u.role).ToListAsync();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Users>> GetUsers(int id)
         {
-            var users = await _context.Users.FindAsync(id);
+            var users = await _context.Users
+                .Include(u => u.role)
+                .FirstOrDefaultAsync(u => u.Id_User == id);
 
             if (users == null)
             {
@@ -52,38 +54,72 @@ namespace jmasAPI.Controllers
             return users;
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/Users/5        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsers(int id, Users users)
         {
             if (id != users.Id_User)
             {
-                return BadRequest();
+                return BadRequest("ID del usuario no coincide");
             }
 
-            var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id_User == id);
+            // Obtener el usuario existente con su rol
+            var existingUser = await _context.Users
+                .Include(u => u.role)
+                .FirstOrDefaultAsync(u => u.Id_User == id);
+
             if (existingUser == null)
             {
-                return NotFound();
+                return NotFound("Usuario no encontrado");
             }
 
-            // Verifica si la contraseña fue modificada
+            // Validar unicidad de User_Contacto y User_Access (excepto para el mismo usuario)
+            if (await _context.Users.AnyAsync(u => u.User_Contacto == users.User_Contacto && u.Id_User != id))
+            {
+                return Conflict("El contacto ya está en uso por otro usuario");
+            }
+
+            if (await _context.Users.AnyAsync(u => u.User_Access == users.User_Access && u.Id_User != id))
+            {
+                return Conflict("La palabra de acceso ya está en uso por otro usuario");
+            }
+
+            //Manejar el cambio de rol si es necesario
+            if (users.idRole.HasValue)
+            {
+                var newRole = await _context.Role.FindAsync(users.idRole);
+                if (newRole == null)
+                {
+                    return BadRequest("El rol especificado no existe");
+                }
+                existingUser.role = newRole;
+                existingUser.idRole = users.idRole;
+            } else
+            {
+                // Si no se envía idRole, mantener el actual o establecerlo como null
+                existingUser.idRole = existingUser.idRole;
+            }
+
+            // Actualizar los demás campos
+            existingUser.User_Name = users.User_Name;
+            existingUser.User_Contacto = users.User_Contacto;
+            existingUser.User_Access = users.User_Access;
+            existingUser.User_Rol = users.User_Rol;
+
+            // Manejar cambio de contraseña (solo si se proporcionó una nueva)
             if (!string.IsNullOrEmpty(users.User_Password) && users.User_Password != existingUser.User_Password)
             {
-                users.User_Password = _passwordHasher.HashPassword(users, users.User_Password);
+                existingUser.User_Password = _passwordHasher.HashPassword(existingUser, users.User_Password);
             }
-            else
-            {
-                // Si no se modificó, usa la contraseña existente
-                users.User_Password = existingUser.User_Password;
-            }            
-
-            _context.Entry(users).State = EntityState.Modified;
 
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Cargar el rol actualizado para la respuesta
+                await _context.Entry(existingUser)
+                    .Reference(u => u.role)
+                    .LoadAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -97,30 +133,48 @@ namespace jmasAPI.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(existingUser);
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/Users        
         [HttpPost]
         public async Task<ActionResult<Users>> PostUsers(Users users)
         {
-            //Unicidad de User_Contacto y User_Access
-            if (await _context.Users.AnyAsync(uContacto => uContacto.User_Contacto == users.User_Contacto))
+            // 1. Validar unicidad de campos
+            if (await _context.Users.AnyAsync(u => u.User_Contacto == users.User_Contacto))
+                return Conflict("El contacto ya está en uso");
+
+            if (await _context.Users.AnyAsync(u => u.User_Access == users.User_Access))
+                return Conflict("La palabra de acceso ya está en uso");
+
+            // 2. Validar que el rol exista (si se especificó)
+            if (users.idRole.HasValue)
             {
-                return Conflict("El contaco ya está en uso");
+                var roleExists = await _context.Role.AnyAsync(r => r.idRole == users.idRole);
+                if (!roleExists)
+                    return BadRequest("El rol especificado no existe");
+
+                // Cargar el rol primero para asegurar la relación
+                var role = await _context.Role.FindAsync(users.idRole);
+                users.role = role; // Establecer la referencia completa
+            }
+            else
+            {
+                users.role = null; // Asegurarse que sea null si no hay idRole
             }
 
-            if (await _context.Users.AnyAsync(uAccess => uAccess.User_Access == users.User_Access))
-            {
-                return Conflict("Palabra de acceso ya está en uso");
-            }
-
-            //Hash
+            // 3. Hash de la contraseña
             users.User_Password = _passwordHasher.HashPassword(users, users.User_Password);
 
-            _context.Users.Add(users);            
+            // 4. Guardar el usuario
+            _context.Users.Add(users);
             await _context.SaveChangesAsync();
+
+            // 5. Forzar la carga del rol para la respuesta
+            await _context.Entry(users)
+                .Reference(u => u.role)
+                .LoadAsync();
+
             return CreatedAtAction("GetUsers", new { id = users.Id_User }, users);
         }
 
