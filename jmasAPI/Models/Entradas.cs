@@ -30,10 +30,10 @@ namespace jmasAPI.Models
         public int Id_User { get; set; }
 
         [ForeignKey("Almacenes")]
-        public int Id_Almacen { get; set; }
+        public int? Id_Almacen { get; set; }
 
         [ForeignKey("Proveedores")]
-        public int Id_Proveedor { get; set; }
+        public int? Id_Proveedor { get; set; }
 
         [ForeignKey("Juntas")]
         public int Id_Junta { get; set; }        
