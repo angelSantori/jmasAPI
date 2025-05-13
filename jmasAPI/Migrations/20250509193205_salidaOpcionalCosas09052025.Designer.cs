@@ -12,8 +12,8 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250417203644_local-17-04-25")]
-    partial class local170425
+    [Migration("20250509193205_salidaOpcionalCosas09052025")]
+    partial class salidaOpcionalCosas09052025
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -338,6 +338,22 @@ namespace jmasAPI.Migrations
                     b.ToTable("CContable");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Calle", b =>
+                {
+                    b.Property<int>("idCalle")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idCalle"));
+
+                    b.Property<string>("calleNombre")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idCalle");
+
+                    b.ToTable("Calle");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Cancelado", b =>
                 {
                     b.Property<int>("idCancelacion")
@@ -430,6 +446,22 @@ namespace jmasAPI.Migrations
                     b.ToTable("CapturaInvIni");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Colonia", b =>
+                {
+                    b.Property<int>("idColonia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idColonia"));
+
+                    b.Property<string>("nombreColonia")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idColonia");
+
+                    b.ToTable("Colonia");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Entradas", b =>
                 {
                     b.Property<int>("Id_Entradas")
@@ -462,13 +494,13 @@ namespace jmasAPI.Migrations
                     b.Property<double>("Entrada_Unidades")
                         .HasColumnType("double");
 
-                    b.Property<int>("Id_Almacen")
+                    b.Property<int?>("Id_Almacen")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Junta")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id_Proveedor")
+                    b.Property<int?>("Id_Proveedor")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_User")
@@ -490,6 +522,27 @@ namespace jmasAPI.Migrations
                     b.HasIndex("idProducto");
 
                     b.ToTable("Entradas");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.Herramienta", b =>
+                {
+                    b.Property<int>("idHerramienta")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idHerramienta"));
+
+                    b.Property<string>("htaEstado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("htaNombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idHerramienta");
+
+                    b.ToTable("Herramienta");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.Juntas", b =>
@@ -531,7 +584,7 @@ namespace jmasAPI.Migrations
                     b.Property<string>("colonia")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("conteo")
+                    b.Property<int?>("conteo")
                         .HasColumnType("int");
 
                     b.Property<int?>("contrato")
@@ -618,7 +671,6 @@ namespace jmasAPI.Migrations
                         .HasColumnType("varchar(5)");
 
                     b.Property<string>("ubicacion")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("zona")
@@ -757,6 +809,45 @@ namespace jmasAPI.Migrations
                     b.ToTable("Proveedores");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Role", b =>
+                {
+                    b.Property<int>("idRole")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idRole"));
+
+                    b.Property<bool>("canAdd")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canEdit")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageRoles")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageUsers")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canView")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("roleDescr")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("roleNombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idRole");
+
+                    b.ToTable("Role");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Salidas", b =>
                 {
                     b.Property<int>("Id_Salida")
@@ -765,7 +856,7 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Salida"));
 
-                    b.Property<int>("Id_Almacen")
+                    b.Property<int?>("Id_Almacen")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Junta")
@@ -802,6 +893,12 @@ namespace jmasAPI.Migrations
                     b.Property<double>("Salida_Unidades")
                         .HasColumnType("double");
 
+                    b.Property<int?>("idCalle")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("idColonia")
+                        .HasColumnType("int");
+
                     b.Property<int?>("idPadron")
                         .HasColumnType("int");
 
@@ -817,6 +914,10 @@ namespace jmasAPI.Migrations
                     b.HasIndex("Id_User");
 
                     b.HasIndex("Id_User_Asignado");
+
+                    b.HasIndex("idCalle");
+
+                    b.HasIndex("idColonia");
 
                     b.HasIndex("idPadron");
 
@@ -858,9 +959,65 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<int?>("idRole")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("roleidRole")
+                        .HasColumnType("int");
+
                     b.HasKey("Id_User");
 
+                    b.HasIndex("idRole");
+
+                    b.HasIndex("roleidRole");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.htaPrestamo", b =>
+                {
+                    b.Property<int>("idHtaPrestamo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idHtaPrestamo"));
+
+                    b.Property<int?>("Id_UserAsignado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("externoContacto")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("externoNombre")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("idHerramienta")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idUserResponsable")
+                        .HasColumnType("int");
+
+                    b.Property<string>("prestCodFolio")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("prestFechaDevol")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("prestFechaPrest")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idHtaPrestamo");
+
+                    b.HasIndex("Id_UserAsignado");
+
+                    b.HasIndex("idHerramienta");
+
+                    b.HasIndex("idUserResponsable");
+
+                    b.ToTable("htaPrestamo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1003,8 +1160,7 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Almacenes", null)
                         .WithMany()
                         .HasForeignKey("Id_Almacen")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Juntas", null)
                         .WithMany()
@@ -1015,8 +1171,7 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Proveedores", null)
                         .WithMany()
                         .HasForeignKey("Id_Proveedor")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
@@ -1067,8 +1222,7 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Almacenes", null)
                         .WithMany()
                         .HasForeignKey("Id_Almacen")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Juntas", null)
                         .WithMany()
@@ -1087,6 +1241,16 @@ namespace jmasAPI.Migrations
                         .HasForeignKey("Id_User_Asignado")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("jmasAPI.Models.Calle", null)
+                        .WithMany()
+                        .HasForeignKey("idCalle")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Colonia", null)
+                        .WithMany()
+                        .HasForeignKey("idColonia")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("jmasAPI.Models.Padron", null)
                         .WithMany()
                         .HasForeignKey("idPadron")
@@ -1095,6 +1259,40 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
                         .HasForeignKey("idProducto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.Users", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Role", null)
+                        .WithMany()
+                        .HasForeignKey("idRole")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Role", "role")
+                        .WithMany()
+                        .HasForeignKey("roleidRole");
+
+                    b.Navigation("role");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.htaPrestamo", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("Id_UserAsignado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Herramienta", null)
+                        .WithMany()
+                        .HasForeignKey("idHerramienta")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUserResponsable")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

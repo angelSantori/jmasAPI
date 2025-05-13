@@ -5,14 +5,14 @@
 namespace jmasAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class local100420255 : Migration
+    public partial class salidaOpcionalCosas09052025 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "idProblema",
-                table: "LectEnviar",
+                name: "Id_Almacen",
+                table: "Salidas",
                 type: "int",
                 nullable: true,
                 oldClrType: typeof(int),
@@ -23,8 +23,8 @@ namespace jmasAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "idProblema",
-                table: "LectEnviar",
+                name: "Id_Almacen",
+                table: "Salidas",
                 type: "int",
                 nullable: false,
                 defaultValue: 0,
