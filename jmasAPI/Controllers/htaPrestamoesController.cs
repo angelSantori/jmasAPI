@@ -42,6 +42,49 @@ namespace jmasAPI.Controllers
             return htaPrestamo;
         }
 
+        // Get: api/htaPrest/ByFolio/{folio}
+        [HttpGet("ByFolio/{folio}")]
+        public async Task<ActionResult<IEnumerable<htaPrestamo>>> GetHPByFolio(string folio)
+        {
+            // Filtrar las entradas cuyo folio coincida con el valor proporcionado
+            var htaprest = await _context.htaPrestamo
+                .Where(hp => hp.prestCodFolio == folio)
+                .ToListAsync();
+
+            // Verificar si se encontraron registros
+            if (htaprest == null || htaprest.Count == 0)
+            {
+                return NotFound(new { message = $"No se ecnotraron registros con el folio: ${folio}"});
+            }
+
+            return Ok(htaprest);
+        }
+
+        // Get: api/htaPrest/nextPrestCodFolio
+        [HttpGet("nextPrestCodFolio")]
+        public async Task<ActionResult<string>> GetNextPrestCodFolio()
+        {
+            // Get all unique CodFolio
+            var codFolios = await _context.htaPrestamo
+                .Where(hp => !string.IsNullOrEmpty(hp.prestCodFolio))
+                .Select(hp => hp.prestCodFolio)
+                .Distinct()
+                .ToListAsync();
+
+            // Parse the codfolios to integeres
+            var codFolioNumbers = codFolios
+                .Select(cf => int.Parse(cf.Replace("HP", "")))
+                .OrderByDescending(n => n)
+                .ToList();
+
+            // Get the last numbre o start from 0 if there are no entries
+            int lastNumber = codFolioNumbers.FirstOrDefault();
+            int nextNumber = lastNumber + 1;
+
+            return Ok($"HP{nextNumber}");
+
+        }
+
 
 
         // PUT: api/htaPrestamos/5
