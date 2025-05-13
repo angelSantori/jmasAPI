@@ -491,13 +491,13 @@ namespace jmasAPI.Migrations
                     b.Property<double>("Entrada_Unidades")
                         .HasColumnType("double");
 
-                    b.Property<int>("Id_Almacen")
+                    b.Property<int?>("Id_Almacen")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Junta")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id_Proveedor")
+                    b.Property<int?>("Id_Proveedor")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_User")
@@ -853,7 +853,7 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Salida"));
 
-                    b.Property<int>("Id_Almacen")
+                    b.Property<int?>("Id_Almacen")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Junta")
@@ -979,11 +979,24 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idHtaPrestamo"));
 
-                    b.Property<int>("Id_User")
+                    b.Property<int?>("Id_UserAsignado")
                         .HasColumnType("int");
+
+                    b.Property<string>("externoContacto")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("externoNombre")
+                        .HasColumnType("longtext");
 
                     b.Property<int>("idHerramienta")
                         .HasColumnType("int");
+
+                    b.Property<int>("idUserResponsable")
+                        .HasColumnType("int");
+
+                    b.Property<string>("prestCodFolio")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("prestFechaDevol")
                         .IsRequired()
@@ -995,9 +1008,11 @@ namespace jmasAPI.Migrations
 
                     b.HasKey("idHtaPrestamo");
 
-                    b.HasIndex("Id_User");
+                    b.HasIndex("Id_UserAsignado");
 
                     b.HasIndex("idHerramienta");
+
+                    b.HasIndex("idUserResponsable");
 
                     b.ToTable("htaPrestamo");
                 });
@@ -1142,8 +1157,7 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Almacenes", null)
                         .WithMany()
                         .HasForeignKey("Id_Almacen")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Juntas", null)
                         .WithMany()
@@ -1154,8 +1168,7 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Proveedores", null)
                         .WithMany()
                         .HasForeignKey("Id_Proveedor")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
@@ -1206,8 +1219,7 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Almacenes", null)
                         .WithMany()
                         .HasForeignKey("Id_Almacen")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Juntas", null)
                         .WithMany()
@@ -1266,13 +1278,18 @@ namespace jmasAPI.Migrations
                 {
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
-                        .HasForeignKey("Id_User")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("Id_UserAsignado")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.Herramienta", null)
                         .WithMany()
                         .HasForeignKey("idHerramienta")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUserResponsable")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
