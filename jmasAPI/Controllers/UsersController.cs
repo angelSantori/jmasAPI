@@ -54,6 +54,22 @@ namespace jmasAPI.Controllers
             return users;
         }
 
+        // GET: api/Padrons/BuscarPorNombre?nombre={nombre}
+        [HttpGet("UserPorNombre")]
+        public async Task<ActionResult<IEnumerable<Users>>> UserPorNombre([FromQuery] string userNombre)
+        {
+            if (string.IsNullOrWhiteSpace(userNombre))
+            {
+                return BadRequest("El parámetro 'userNombre' es requerido");
+            }
+
+            return await _context.Users
+                .Where(uN => uN.User_Name != null &&
+                             uN.User_Name.ToLower().Contains(userNombre.ToLower()))
+                .Take(30)
+                .ToListAsync();
+        }
+
         // PUT: api/Users/5        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsers(int id, Users users)
