@@ -58,9 +58,29 @@ namespace jmasAPI.Controllers
                 .ToListAsync();
         }
 
+        // GET: api/Herramientas/PorEstado?estado={estado}
+        [HttpGet("HtaPorEstado")]
+        public async Task<ActionResult<IEnumerable<Herramienta>>> getHtaXEstado([FromQuery] string estado)
+        {
+            if (string.IsNullOrWhiteSpace(estado))
+            {
+                return BadRequest(new { message = "El parámetro 'estado' es requerido" });
+            }
 
-        // PUT: api/Herramientas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+            var herramientas = await _context.Herramienta
+                .Where(h => h.htaEstado == estado) 
+                .ToListAsync();
+
+            if (herramientas == null || herramientas.Count == 0)
+            {
+                return NotFound(new { message = $"No se encontraron herramientas con estado: {estado}" });
+            }
+
+            return Ok(herramientas);
+        }
+
+
+        // PUT: api/Herramientas/5        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutHerramienta(int id, Herramienta herramienta)
         {
@@ -91,7 +111,6 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Herramientas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Herramienta>> PostHerramienta(Herramienta herramienta)
         {
