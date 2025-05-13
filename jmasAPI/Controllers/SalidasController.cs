@@ -25,7 +25,19 @@ namespace jmasAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Salidas>>> GetSalidas()
         {
-            return await _context.Salidas.ToListAsync();
+            try
+            {
+                // Establece timeout de 5 minutos (300 segundos) solo para esta consulta
+                _context.Database.SetCommandTimeout(300);
+
+                return await _context.Salidas
+                    .AsNoTracking() // Recomendado para consultas de solo lectura
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al cargar salidas: {ex.Message}");
+            }
         }
 
         // GET: api/Salidas/5
