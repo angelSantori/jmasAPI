@@ -33,7 +33,7 @@ namespace jmasAPI.Models
         public int Id_Junta { get; set; }
 
         [ForeignKey("Almacenes")]
-        public int Id_Almacen { get; set; }
+        public int? Id_Almacen { get; set; }
 
         [ForeignKey("Users")]
         public int? Id_User_Asignado { get; set; }
