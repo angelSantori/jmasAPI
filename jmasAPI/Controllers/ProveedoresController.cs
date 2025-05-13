@@ -42,6 +42,22 @@ namespace jmasAPI.Controllers
             return proveedores;
         }
 
+        // GET: api/Proveedores/BuscarProveedorXNombre?nombreProveedor={nombre}
+        [HttpGet("ProveedorPorNombre")]
+        public async Task<ActionResult<IEnumerable<Proveedores>>> ProveedorPorNombre([FromQuery] string nombreProveedor)
+        {
+            if (string.IsNullOrWhiteSpace(nombreProveedor))
+            {
+                return BadRequest("El parámetro 'nombreProveedor' es requerido");
+            }
+
+            return await _context.Proveedores
+                .Where(pN => pN.Proveedor_Name != null &&
+                             pN.Proveedor_Name.ToLower().Contains(nombreProveedor.ToLower()))
+                .Take(30)
+                .ToListAsync();
+        }
+
         // PUT: api/Proveedores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
