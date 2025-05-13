@@ -51,7 +51,7 @@ namespace jmasAPI
         public DbSet<Role> Role { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);            
 
             //User
             modelBuilder.Entity<Users>()
@@ -70,7 +70,13 @@ namespace jmasAPI
             modelBuilder.Entity<htaPrestamo>()
                 .HasOne<Users>()
                 .WithMany()
-                .HasForeignKey(prestamo => prestamo.Id_User)
+                .HasForeignKey(prestamo => prestamo.Id_UserAsignado)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<htaPrestamo>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(presUserRes => presUserRes.idUserResponsable)
                 .OnDelete(DeleteBehavior.Restrict);
             
             //LECTURAS
