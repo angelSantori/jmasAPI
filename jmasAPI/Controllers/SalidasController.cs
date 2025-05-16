@@ -31,7 +31,7 @@ namespace jmasAPI.Controllers
                 _context.Database.SetCommandTimeout(300);
 
                 return await _context.Salidas
-                    .AsNoTracking() // Recomendado para consultas de solo lectura
+                    .OrderByDescending(s => s.Id_Salida)
                     .ToListAsync();
             }
             catch (Exception ex)
