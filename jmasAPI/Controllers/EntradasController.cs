@@ -25,7 +25,19 @@ namespace jmasAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradas()
         {
-            return await _context.Entradas.ToListAsync();
+            try
+            {
+                // Establece timeout de 5 minutos (300 segundos) solo para esta consulta
+                _context.Database.SetCommandTimeout(300);
+
+                return await _context.Entradas
+                    .OrderByDescending(e => e.Id_Entradas)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al cargar entradas: {ex.Message}");
+            }
         }
 
         // GET: api/Entradas/5
