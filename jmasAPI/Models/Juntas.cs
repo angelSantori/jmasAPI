@@ -14,7 +14,6 @@ namespace jmasAPI.Models
         [StringLength(50)]
         public string Junta_Telefono { get; set; }
 
-        [ForeignKey("Users")]
-        public int Id_User { get; set; }
+        public string Junta_Encargado { get; set; }
     }
 }

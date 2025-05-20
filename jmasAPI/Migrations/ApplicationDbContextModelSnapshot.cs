@@ -550,8 +550,9 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Junta"));
 
-                    b.Property<int>("Id_User")
-                        .HasColumnType("int");
+                    b.Property<string>("Junta_Encargado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Junta_Name")
                         .IsRequired()
@@ -564,8 +565,6 @@ namespace jmasAPI.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.HasKey("Id_Junta");
-
-                    b.HasIndex("Id_User");
 
                     b.ToTable("Juntas");
                 });
@@ -1179,15 +1178,6 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
                         .HasForeignKey("idProducto")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("jmasAPI.Models.Juntas", b =>
-                {
-                    b.HasOne("jmasAPI.Models.Users", null)
-                        .WithMany()
-                        .HasForeignKey("Id_User")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
