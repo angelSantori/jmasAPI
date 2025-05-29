@@ -49,9 +49,18 @@ namespace jmasAPI
         public DbSet<htaPrestamo> htaPrestamo { get; set; } = default!;
 
         public DbSet<Role> Role { get; set; } = default!;
+
+        public DbSet<DocumentPdf> documentPdf { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);            
+            base.OnModelCreating(modelBuilder);
+            
+            //PDF
+            modelBuilder.Entity<DocumentPdf>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(docUser => docUser.idUser)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //User
             modelBuilder.Entity<Users>()
