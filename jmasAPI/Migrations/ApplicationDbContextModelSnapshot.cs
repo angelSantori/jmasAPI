@@ -233,10 +233,13 @@ namespace jmasAPI.Migrations
                     b.Property<double>("AjusteMas_Cantidad")
                         .HasColumnType("double");
 
+                    b.Property<string>("AjusteMas_CodFolio")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("AjusteMas_Fecha")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar(10)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Id_Producto")
                         .HasColumnType("int");
@@ -457,6 +460,36 @@ namespace jmasAPI.Migrations
                     b.HasKey("idColonia");
 
                     b.ToTable("Colonia");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.DocumentPdf", b =>
+                {
+                    b.Property<int>("idDocumentPdf")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idDocumentPdf"));
+
+                    b.Property<string>("dataDocPdf")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("fechaDocPdf")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("idUser")
+                        .HasColumnType("int");
+
+                    b.Property<string>("nombreDocPdf")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idDocumentPdf");
+
+                    b.HasIndex("idUser");
+
+                    b.ToTable("documentPdf");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.Entradas", b =>
@@ -1147,6 +1180,15 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
                         .HasForeignKey("Id_Producto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.DocumentPdf", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUser")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

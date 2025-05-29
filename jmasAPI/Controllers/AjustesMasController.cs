@@ -42,6 +42,21 @@ namespace jmasAPI.Controllers
             return ajustesMas;
         }
 
+        //Get api/AjustesMas/nextFolioAJM
+        [HttpGet("nextFolioAJM")]
+        public async Task<ActionResult<string>> GetNextFolioAJM()
+        {
+            var lastAJM = await _context.AjustesMas
+                .OrderByDescending(ajm => ajm.Id_AjusteMas)
+                .FirstOrDefaultAsync();
+            
+            int nextNumber = lastAJM != null
+                ? int.Parse(lastAJM.AjusteMas_CodFolio.Replace("AJM", "")) +1
+                : 1;
+
+            return Ok($"AJM{nextNumber}");
+        }
+
         // PUT: api/AjustesMas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

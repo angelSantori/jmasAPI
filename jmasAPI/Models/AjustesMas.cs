@@ -8,12 +8,13 @@ namespace jmasAPI.Models
         [Key]
         public int Id_AjusteMas { get; set; }
 
+        public string AjusteMas_CodFolio { get; set; }
+
         public string AjuesteMas_Descripcion { get; set; }
 
         public double AjusteMas_Cantidad { get; set; }
-
-        [StringLength(10)]
-        public string AjusteMas_Fecha { get; set; }        
+        
+        public string AjusteMas_Fecha { get; set; }      
 
         [ForeignKey("Productos")]
         public int Id_Producto { get; set; }
