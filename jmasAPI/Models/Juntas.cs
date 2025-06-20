@@ -12,8 +12,10 @@ namespace jmasAPI.Models
         public string Junta_Name { get; set; }
 
         [StringLength(50)]
-        public string Junta_Telefono { get; set; }
+        public string? Junta_Telefono { get; set; }
 
-        public string Junta_Encargado { get; set; }
+        public string? Junta_Encargado { get; set; }
+
+        public string? Junta_Cuenta { get; set; }
     }
 }
