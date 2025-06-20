@@ -51,10 +51,70 @@ namespace jmasAPI
         public DbSet<Role> Role { get; set; } = default!;
 
         public DbSet<DocumentPdf> documentPdf { get; set; } = default!;
+
+        public DbSet<OrdenTrabajo> ordenTrabajo { get; set; } = default!;
+
+        public DbSet<EvaluacionOrdenTrabajo> evaluacionOrdenTrabajo { get; set; } = default!;
+
+        public DbSet<TrabajoRealizado> trabajoRealizado { get; set; } = default!;
+
+        public DbSet<OrdenCompra> ordenCompra { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             
+            //Orden Compra
+            modelBuilder.Entity<OrdenCompra>()
+                .HasOne<Proveedores>()
+                .WithMany()
+                .HasForeignKey(provOC => provOC.idProveedor)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Trabajo Realizado
+            modelBuilder.Entity<TrabajoRealizado>()
+                .HasOne<OrdenTrabajo>()
+                .WithMany()
+                .HasForeignKey(ordenTR => ordenTR.idOrdenTrabajo)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrabajoRealizado>()
+                .HasOne<Salidas>()
+                .WithMany()
+                .HasForeignKey(salidaTR => salidaTR.idSalida)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrabajoRealizado>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(userTR => userTR.idUserTR)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Evaluacion orden trabajo
+            modelBuilder.Entity<EvaluacionOrdenTrabajo>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(userEOT => userEOT.idUser)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EvaluacionOrdenTrabajo>()
+                .HasOne<OrdenTrabajo>() 
+                .WithMany()
+                .HasForeignKey(ordenTrabajoEOT => ordenTrabajoEOT.idOrdenTrabajo) 
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Orden Trabajo
+            modelBuilder.Entity<OrdenTrabajo>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(userOT => userOT.idUser)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrdenTrabajo>()
+                .HasOne<Padron>()
+                .WithMany()
+                .HasForeignKey(padronOT => padronOT.idPadron)
+                .OnDelete(DeleteBehavior.Restrict);
+
             //PDF
             modelBuilder.Entity<DocumentPdf>()
                 .HasOne<Users>()
@@ -155,6 +215,12 @@ namespace jmasAPI
                 .HasOne<Colonia>()
                 .WithMany()
                 .HasForeignKey(salColonia  => salColonia.idColonia)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Salidas>()
+                .HasOne<OrdenTrabajo>()
+                .WithMany()
+                .HasForeignKey(salOT => salOT.idOrdenTrabajo)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //ENTRADAS relaciones
