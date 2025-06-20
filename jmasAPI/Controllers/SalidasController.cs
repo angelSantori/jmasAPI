@@ -87,6 +87,46 @@ namespace jmasAPI.Controllers
             return Ok($"Sal{nextNumber}");
         }
 
+        // GET: api/Salidas/ByUserAsignado/{userId}
+        [HttpGet("ByUserAsignado/{userId}")]
+        public async Task<ActionResult<IEnumerable<Salidas>>> GetSalidasByUserAsignado(int userId)
+        {
+            try
+            {
+                var salidas = await _context.Salidas
+                    .Where(s => s.Id_User_Asignado == userId)
+                    .OrderByDescending(s => s.Id_Salida)
+                    .ToListAsync();
+
+                if (salidas == null || salidas.Count == 0)
+                {
+                    return NotFound(new { message = $"No se enxontraron salidas asignadas al usuario con ID: {userId}" });
+                }
+
+                return Ok(salidas);
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(500, $"Error al cargar salidas por usuario asignado: {ex.Message}");
+            }
+        }
+
+        // GET: api/Salidas/ByOT/{userId}
+        [HttpGet("ByOT/{otId}")]
+        public async Task<ActionResult<IEnumerable<Salidas>>> GetSalidaByOT(int otId)
+        {
+            var salidas = await _context.Salidas
+                .Where(sal => sal.idOrdenTrabajo == otId)
+                .ToListAsync();
+
+            if (salidas == null || salidas.Count == 0)
+            {
+                return NotFound(new { message = $"No se ecnotraron salidas OT con ID {otId}" });
+            }
+
+            return Ok(salidas);
+        }
+
         // PUT: api/Salidas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
