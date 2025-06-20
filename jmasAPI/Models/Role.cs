@@ -18,6 +18,7 @@ namespace jmasAPI.Models
         public bool canDelete { get; set; }
         public bool canManageUsers { get; set; }
         public bool canManageRoles { get; set; }
+        public bool canEvaluar {  get; set; }
 
     }
 }
