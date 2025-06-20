@@ -79,6 +79,18 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
+
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "JMAS API",
+        Version = "v1",
+        Description = "API para el sistema JMAS",
+        Contact = new OpenApiContact
+        {
+            Name = "Soporte JMAS",
+            Email = "soporte@jmas.com"
+        }
+    });
 });
 
 var app = builder.Build();

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jmasAPI;
 
@@ -11,9 +12,11 @@ using jmasAPI;
 namespace jmasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250620180806_juntaCuenta")]
+    partial class juntaCuenta
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -619,9 +622,11 @@ namespace jmasAPI.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_Junta"));
 
                     b.Property<string>("Junta_Cuenta")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Junta_Encargado")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Junta_Name")
@@ -630,6 +635,7 @@ namespace jmasAPI.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<string>("Junta_Telefono")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
