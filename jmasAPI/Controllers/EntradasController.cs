@@ -72,6 +72,22 @@ namespace jmasAPI.Controllers
             return Ok(entradas);
         }
 
+        // GET: api/Entradas/ByProducto/{productoID}
+        [HttpGet("ByProducto/{productoID}")]
+        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradaXProducto(int productoID)
+        {
+            var entrada = await _context.Entradas
+                .Where(entrada => entrada.idProducto == productoID)
+                .ToListAsync();
+
+            if (entrada == null || entrada.Count == 0)
+            {
+                return NotFound(new { message = $"No se encontraron entradas con producto: {productoID}" });
+            }
+
+            return Ok(entrada);
+        }
+
         // Get siguiente código de folio
         [HttpGet("next-codfolio")]
         public async Task<ActionResult<string>> GetNextCodFolio()
@@ -126,6 +142,8 @@ namespace jmasAPI.Controllers
 
             return NoContent();
         }
+
+
 
         // POST: api/Entradas        
         [HttpPost]
