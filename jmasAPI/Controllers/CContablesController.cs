@@ -42,6 +42,22 @@ namespace jmasAPI.Controllers
             return cContable;
         }
 
+        // GET: api/CContables/ByProducto/{productoId}
+        [HttpGet("ByProducto/{productoId}")]
+        public async Task<ActionResult<IEnumerable<CContable>>> GetCCxProducto(int productoId)
+        {
+            var ccontable = await _context.CContable
+                .Where(cc => cc.idProducto == productoId)
+                .ToListAsync();
+
+            if (ccontable == null || ccontable.Count == 0)
+            {
+                return NotFound(new { message = $"No se ecnotraron cc con el productoId: {productoId}" });
+            }
+
+            return Ok(ccontable);
+        }
+
         // PUT: api/CContables/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
