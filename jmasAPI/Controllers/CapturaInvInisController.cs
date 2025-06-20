@@ -42,6 +42,22 @@ namespace jmasAPI.Controllers
             return capturaInvIni;
         }
 
+        // GET: api/CapturaInvInis/ByProducto/{productoId}
+        [HttpGet("ByProducto/{productoId}")]
+        public async Task<ActionResult<IEnumerable<CapturaInvIni>>> GetCIIxProducto(int productoId)
+        {
+            var capturaii = await _context.CapturaInvIni
+                .Where(cii => cii.Id_Producto == productoId)
+                .ToListAsync();
+
+            if (capturaii == null || capturaii.Count == 0)
+            {
+                return NotFound(new { message = $"No se encotraron capturas con productoId: {productoId}" });
+            }
+
+            return Ok(capturaii);
+        }
+
         // PUT: api/CapturaInvInis/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
