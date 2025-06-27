@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace jmasAPI.Controllers
 {
@@ -89,8 +90,25 @@ namespace jmasAPI.Controllers
             return Ok(trabajos);
         }
 
-        //GET: api/TrabajoRealizadoes/ByOT/{otID}
-        [HttpGet("ByOT/{otID}")]
+        //GET: api/TrabajoRealizadoes/ByUserEmpty/{userId}
+        [HttpGet("ByUserEmpty/{userID}")]
+        public async Task<ActionResult<IEnumerable<TrabajoRealizado>>> GetTRByUserEmpty(int userID)
+        {
+            var trabajos = await _context.trabajoRealizado
+                .Where(tr => tr.idUserTR == userID && string.IsNullOrEmpty(tr.fotoAntes64TR))
+                .ToListAsync();
+
+            if (trabajos == null || trabajos.Count == 0)
+            {
+                return NotFound(new { mesaage = $"No se encontraron trabajos realizados para el usuario con ID {userID}" });
+            }
+
+            return Ok(trabajos);
+        }
+
+
+            //GET: api/TrabajoRealizadoes/ByOT/{otID}
+            [HttpGet("ByOT/{otID}")]
         public async Task<ActionResult<IEnumerable<TrabajoRealizado>>> GetTRByOT(int otID)
         {
             try
