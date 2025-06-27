@@ -10,17 +10,11 @@ namespace jmasAPI.Models
 
         public string folioOT { get; set; }
 
-        public string descripcionOT { get; set; }
-
         public string fechaOT { get; set; }
 
         public string medioOT { get; set; }
 
         public bool materialOT { get; set; }
-
-        public string direccionOT { get; set; }
-
-        public string tipoProblemaOT { get; set; }
 
         public string estadoOT { get; set; }
 
@@ -32,5 +26,7 @@ namespace jmasAPI.Models
         [ForeignKey("Padron")]
         public int idPadron { get; set; }
 
+        [ForeignKey("TipoProblema")]
+        public int idTipoProblema { get; set; }
     }
 }
