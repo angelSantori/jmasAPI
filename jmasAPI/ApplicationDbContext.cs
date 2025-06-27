@@ -59,6 +59,8 @@ namespace jmasAPI
         public DbSet<TrabajoRealizado> trabajoRealizado { get; set; } = default!;
 
         public DbSet<OrdenCompra> ordenCompra { get; set; } = default!;
+
+        public DbSet<TipoProblema> tipoProblema { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -113,6 +115,12 @@ namespace jmasAPI
                 .HasOne<Padron>()
                 .WithMany()
                 .HasForeignKey(padronOT => padronOT.idPadron)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrdenTrabajo>()
+                .HasOne<TipoProblema>()
+                .WithMany()
+                .HasForeignKey(otTP => otTP.idTipoProblema)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //PDF

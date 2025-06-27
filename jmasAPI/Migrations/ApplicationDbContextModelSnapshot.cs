@@ -828,14 +828,6 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idOrdenTrabajo"));
 
-                    b.Property<string>("descripcionOT")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("direccionOT")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("estadoOT")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -849,6 +841,9 @@ namespace jmasAPI.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int>("idPadron")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idTipoProblema")
                         .HasColumnType("int");
 
                     b.Property<int>("idUser")
@@ -865,13 +860,11 @@ namespace jmasAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("tipoProblemaOT")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.HasKey("idOrdenTrabajo");
 
                     b.HasIndex("idPadron");
+
+                    b.HasIndex("idTipoProblema");
 
                     b.HasIndex("idUser");
 
@@ -1125,6 +1118,23 @@ namespace jmasAPI.Migrations
                     b.HasIndex("idProducto");
 
                     b.ToTable("Salidas");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.TipoProblema", b =>
+                {
+                    b.Property<int>("idTipoProblema")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idTipoProblema"));
+
+                    b.Property<string>("nombreTP")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idTipoProblema");
+
+                    b.ToTable("tipoProblema");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.TrabajoRealizado", b =>
@@ -1479,6 +1489,12 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Padron", null)
                         .WithMany()
                         .HasForeignKey("idPadron")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.TipoProblema", null)
+                        .WithMany()
+                        .HasForeignKey("idTipoProblema")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
