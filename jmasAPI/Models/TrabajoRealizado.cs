@@ -13,12 +13,13 @@ namespace jmasAPI.Models
         public string? comentarioTR { get; set; }
         public string? fotoAntes64TR { get; set; }
         public string? fotoDespues64TR { get; set; }
+        public int? encuenstaTR { get; set; }
 
         [ForeignKey("Users")]
         public int? idUserTR { get; set; }
 
-        [ForeignKey("OrdenTrabajo")]
-        public int? idOrdenTrabajo { get; set; }
+        [ForeignKey("OrdenServicio")]
+        public int? idOrdenServicio { get; set; }
 
         [ForeignKey("Salidas")]
         public int? idSalida { get; set; }
