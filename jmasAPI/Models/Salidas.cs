@@ -47,7 +47,7 @@ namespace jmasAPI.Models
         [ForeignKey("Colonia")]
         public int? idColonia { get; set; }
 
-        [ForeignKey("OrdenTrabajo")]
-        public int? idOrdenTrabajo { get; set; }
+        [ForeignKey("OrdenServicio")]
+        public int? idOrdenServicio { get; set; }
     }
 }
