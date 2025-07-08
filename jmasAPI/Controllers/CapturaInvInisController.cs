@@ -58,6 +58,31 @@ namespace jmasAPI.Controllers
             return Ok(capturaii);
         }
 
+        // GET: api/CapturaInvInis/ByMonth/{month}/{year}
+        [HttpGet("ByMonth/{month}/{year}")]
+        public async Task<ActionResult<IEnumerable<CapturaInvIni>>> GetConteoInicialByMonth(int month, int year)
+        {
+            // Formateamos el mes para que tenga 2 dígitos
+            string monthFormatted = month.ToString().PadLeft(2, '0');
+
+            // Convertimos el año completo a formato de 2 dígitos (ej: 2025 -> 25)
+            string yearFormatted = (year % 100).ToString().PadLeft(2, '0');
+
+            // Buscamos registros donde la fecha contenga el mes/año especificado
+            // Usando Contains para manejar el formato dd/MM/yy y los espacios al final
+            var conteoInicial = await _context.CapturaInvIni
+                .Where(c => c.invIniFecha != null &&
+                           c.invIniFecha.Trim().Contains($"/{monthFormatted}/{yearFormatted}"))
+                .ToListAsync();
+
+            if (conteoInicial == null || conteoInicial.Count == 0)
+            {
+                return NotFound(new { message = $"No se encontraron registros de conteo inicial para el mes {month} del año {year}" });
+            }
+
+            return Ok(conteoInicial);
+        }
+
         // PUT: api/CapturaInvInis/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

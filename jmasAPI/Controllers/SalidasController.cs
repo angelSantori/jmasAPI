@@ -116,7 +116,7 @@ namespace jmasAPI.Controllers
         public async Task<ActionResult<IEnumerable<Salidas>>> GetSalidaByOT(int otId)
         {
             var salidas = await _context.Salidas
-                .Where(sal => sal.idOrdenTrabajo == otId)
+                .Where(sal => sal.idOrdenServicio == otId)
                 .ToListAsync();
 
             if (salidas == null || salidas.Count == 0)
@@ -125,6 +125,32 @@ namespace jmasAPI.Controllers
             }
 
             return Ok(salidas);
+        }
+
+        [HttpGet("ByMonth/{month}/{year}")]
+        public async Task<ActionResult<IEnumerable<Salidas>>> GetSalidasByMonth(int month, int year)
+        {
+            try
+            {
+                string monthFormatted = month.ToString().PadLeft(2, '0');
+
+                var salidas = await _context.Salidas
+                    .Where(s => s.Salida_Fecha != null &&
+                                s.Salida_Fecha.Contains($"/{monthFormatted}/{year}") &&
+                                s.Salida_Estado == true)
+                    .ToListAsync();
+
+                if (salidas == null || salidas.Count == 0)
+                {
+                    return NotFound(new { message = $"No se encontraron salidas para el mes {month} del año {year}" });
+                }
+
+                return Ok(salidas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener salidas por mes: {ex.Message}");
+            }
         }
 
         // PUT: api/Salidas/5

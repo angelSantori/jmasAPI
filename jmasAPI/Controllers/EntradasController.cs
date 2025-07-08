@@ -112,6 +112,32 @@ namespace jmasAPI.Controllers
             return Ok($"Ent{nextNumber}");
         }
 
+        [HttpGet("ByMonth/{month}/{year}")]
+        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradasByMonth(int month, int year)
+        {
+            try
+            {
+                string monthFormatted = month.ToString().PadLeft(2, '0');
+
+                var entradas = await _context.Entradas
+                    .Where(e => e.Entrada_Fecha != null &&
+                                e.Entrada_Fecha.Contains($"/{monthFormatted}/{year}") &&
+                                e.Entrada_Estado == true)
+                    .ToListAsync();
+
+                if (entradas == null || entradas.Count == 0)
+                {
+                    return NotFound(new { message = $"No se encontraron entradas para el mes {month} del año {year}" });
+                }
+
+                return Ok(entradas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener entradas por mes: {ex.Message}");
+            }
+        }
+
         // PUT: api/Entradas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
