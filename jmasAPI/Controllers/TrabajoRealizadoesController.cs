@@ -64,7 +64,7 @@ namespace jmasAPI.Controllers
         public async Task<ActionResult<string>> GetNextTRCodFolio()
         {
             var lastTR = await _context.trabajoRealizado
-                .OrderByDescending(tr => tr.idOrdenTrabajo)
+                .OrderByDescending(tr => tr.idOrdenServicio)
                 .FirstOrDefaultAsync();
 
             int nextNumber = lastTR != null
@@ -107,14 +107,14 @@ namespace jmasAPI.Controllers
         }
 
 
-            //GET: api/TrabajoRealizadoes/ByOT/{otID}
-            [HttpGet("ByOT/{otID}")]
+        //GET: api/TrabajoRealizadoes/ByOT/{otID}
+        [HttpGet("ByOT/{otID}")]
         public async Task<ActionResult<IEnumerable<TrabajoRealizado>>> GetTRByOT(int otID)
         {
             try
             {
                 var trabajos = await _context.trabajoRealizado
-                    .Where(tr => tr.idOrdenTrabajo == otID)
+                    .Where(tr => tr.idOrdenServicio == otID)
                     .OrderByDescending(tr => tr.idTrabajoRealizado)
                     .ToListAsync();
 
