@@ -21,6 +21,14 @@ namespace jmasAPI.Models
         [ForeignKey("OrdenServicio")]
         public int? idOrdenServicio { get; set; }
 
+        public string? folioOS { get; set; }
+
+        public string? padronNombre { get; set; }
+
+        public string? padronDireccion { get; set; }
+
+        public string? problemaNombre { get; set; }
+
         [ForeignKey("Salidas")]
         public int? idSalida { get; set; }
     }
