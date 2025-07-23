@@ -1175,6 +1175,9 @@ namespace jmasAPI.Migrations
                     b.Property<string>("fechaTR")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("folioOS")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("folioTR")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -1193,6 +1196,15 @@ namespace jmasAPI.Migrations
 
                     b.Property<int?>("idUserTR")
                         .HasColumnType("int");
+
+                    b.Property<string>("padronDireccion")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("padronNombre")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("problemaNombre")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("ubicacionTR")
                         .HasColumnType("longtext");
