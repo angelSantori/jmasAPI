@@ -63,9 +63,24 @@ namespace jmasAPI
         public DbSet<TipoProblema> tipoProblema { get; set; } = default!;
 
         public DbSet<MedioOrdenServicio> medioOrdenServicio { get; set; } = default!;
+
+        public DbSet<EntrevistaPadron> entrevistaPadron { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            //  Entrevista Padron
+            modelBuilder.Entity<EntrevistaPadron>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(enntrevistaPadronUser =>  enntrevistaPadronUser.idUser)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntrevistaPadron>()
+                .HasOne<OrdenServicio>() 
+                .WithMany()
+                .HasForeignKey(entrevistaPadronOS =>  entrevistaPadronOS.idOrdenServicio)
+                .OnDelete(DeleteBehavior.Restrict);
             
             //Orden Compra
             modelBuilder.Entity<OrdenCompra>()

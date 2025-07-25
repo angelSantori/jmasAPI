@@ -503,6 +503,9 @@ namespace jmasAPI.Migrations
                     b.Property<string>("Entrada_CodFolio")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Entrada_Comentario")
+                        .HasColumnType("longtext");
+
                     b.Property<double>("Entrada_Costo")
                         .HasColumnType("double");
 
@@ -516,6 +519,9 @@ namespace jmasAPI.Migrations
 
                     b.Property<string>("Entrada_ImgB64Factura")
                         .HasColumnType("longtext");
+
+                    b.Property<int?>("Entrada_NumeroFactura")
+                        .HasColumnType("int");
 
                     b.Property<string>("Entrada_Referencia")
                         .IsRequired()
@@ -552,6 +558,41 @@ namespace jmasAPI.Migrations
                     b.HasIndex("idProducto");
 
                     b.ToTable("Entradas");
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.EntrevistaPadron", b =>
+                {
+                    b.Property<int>("idEntrevistaPadron")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idEntrevistaPadron"));
+
+                    b.Property<string>("calificacionEntrevistaPadron")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("comentariosEntrevistaPadron")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("fechaEntrevistaPadron")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("idOrdenServicio")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idUser")
+                        .HasColumnType("int");
+
+                    b.HasKey("idEntrevistaPadron");
+
+                    b.HasIndex("idOrdenServicio");
+
+                    b.HasIndex("idUser");
+
+                    b.ToTable("entrevistaPadron");
                 });
 
             modelBuilder.Entity("jmasAPI.Models.EvaluacionOrdenServicio", b =>
@@ -1082,6 +1123,9 @@ namespace jmasAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Salida_Comentario")
+                        .HasColumnType("longtext");
+
                     b.Property<double>("Salida_Costo")
                         .HasColumnType("double");
 
@@ -1485,6 +1529,20 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Productos", null)
                         .WithMany()
                         .HasForeignKey("idProducto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.EntrevistaPadron", b =>
+                {
+                    b.HasOne("jmasAPI.Models.OrdenServicio", null)
+                        .WithMany()
+                        .HasForeignKey("idOrdenServicio")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUser")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
