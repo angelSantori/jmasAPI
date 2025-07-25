@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+// TODO: Campo para comentario al agregar entrada
+// TODO: Campo para agregar número de factura o remisión
+
 namespace jmasAPI.Models
 {
     public class Entradas
@@ -20,6 +23,10 @@ namespace jmasAPI.Models
 
         [StringLength(250)]
         public string Entrada_Fecha { get; set; }
+
+        public string? Entrada_Comentario { get; set; }
+
+        public int? Entrada_NumeroFactura { get; set; }
 
         public string? Entrada_ImgB64Factura { get; set; }
 
