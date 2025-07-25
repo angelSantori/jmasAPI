@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+// TODO: Campo para agregar comentario al realizar salida
+
 namespace jmasAPI.Models
 {
     public class Salidas
@@ -19,6 +21,8 @@ namespace jmasAPI.Models
         public double Salida_Costo { get; set; }
         
         public string Salida_Fecha { get; set; }
+
+        public string? Salida_Comentario { get; set; }
         
         [StringLength(25)]
         public string? Salida_TipoTrabajo { get; set; }
