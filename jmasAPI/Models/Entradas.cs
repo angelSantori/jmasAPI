@@ -13,7 +13,7 @@ namespace jmasAPI.Models
 
         public string? Entrada_CodFolio { get; set; }
 
-        public string Entrada_Referencia { get; set; }
+        public string? Entrada_Referencia { get; set; }
         
         public bool Entrada_Estado { get; set; } = false;
 
