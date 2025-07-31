@@ -12,7 +12,7 @@ namespace jmasAPI.Models
 
         public string Salida_CodFolio { get; set; }
 
-        public string Salida_Referencia { get; set; }
+        public string? Salida_Referencia { get; set; }
 
         public bool Salida_Estado { get; set; }
 
