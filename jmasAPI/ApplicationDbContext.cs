@@ -97,12 +97,6 @@ namespace jmasAPI
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TrabajoRealizado>()
-                .HasOne<Salidas>()
-                .WithMany()
-                .HasForeignKey(salidaTR => salidaTR.idSalida)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TrabajoRealizado>()
                 .HasOne<Users>()
                 .WithMany()
                 .HasForeignKey(userTR => userTR.idUserTR)
@@ -144,6 +138,24 @@ namespace jmasAPI
                 .HasOne<TipoProblema>()
                 .WithMany()
                 .HasForeignKey(osTP => osTP.idTipoProblema)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrdenServicio>()
+                .HasOne<Calle>()
+                .WithMany()
+                .HasForeignKey(osCalle => osCalle.idCalle)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrdenServicio>()
+                .HasOne<Colonia>()
+                .WithMany()
+                .HasForeignKey(osColonia => osColonia.idColonia)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrdenServicio>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(userAsignadoOS => userAsignadoOS.idUserAsignado)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //PDF
