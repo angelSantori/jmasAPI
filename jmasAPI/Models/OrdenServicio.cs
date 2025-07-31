@@ -18,7 +18,7 @@ namespace jmasAPI.Models
 
         public string prioridadOS { get; set; }
 
-        public int contactoOS { get; set; }
+        public string contactoOS { get; set; }
 
         [ForeignKey("Users")]
         public int idUser { get; set; }
@@ -31,5 +31,14 @@ namespace jmasAPI.Models
 
         [ForeignKey("MedioOrdenServicio")]
         public int idMedio { get; set; }
+
+        [ForeignKey("Calle")]
+        public int? idCalle { get; set; }
+
+        [ForeignKey("Colonia")]
+        public int? idColonia { get; set; }
+
+        [ForeignKey("Users")]
+        public int? idUserAsignado { get; set; }
     }
 }
