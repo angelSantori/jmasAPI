@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
 using NuGet.Protocol.Core.Types;
+using System.Globalization;
 
 namespace jmasAPI.Controllers
 {
@@ -41,6 +42,58 @@ namespace jmasAPI.Controllers
             }
 
             return documentPdf;
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<DocumentPdf>>> SearchDocuments(
+            [FromQuery] string? name,
+            [FromQuery] string? docType,
+            [FromQuery] string? startDate,
+            [FromQuery] string? endDate)
+        {
+            try
+            {
+                // Primero obtener todos los documentos que coincidan con los otros filtros
+                var query = _context.documentPdf.AsQueryable();
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    query = query.Where(d => d.nombreDocPdf.Contains(name));
+                }
+
+                if (!string.IsNullOrEmpty(docType))
+                {
+                    query = query.Where(d => d.nombreDocPdf.StartsWith(docType));
+                }
+
+                // Aplicar filtros de fecha después de materializar la consulta
+                var results = await query.ToListAsync();
+
+                // Filtrar por fechas en memoria
+                if (!string.IsNullOrEmpty(startDate) && DateTime.TryParse(startDate, out var startDateParsed))
+                {
+                    results = results.Where(d =>
+                    {
+                        var datePart = d.fechaDocPdf.Split(' ')[0];
+                        return DateTime.ParseExact(datePart, "dd/MM/yyyy", CultureInfo.InvariantCulture) >= startDateParsed;
+                    }).ToList();
+                }
+
+                if (!string.IsNullOrEmpty(endDate) && DateTime.TryParse(endDate, out var endDateParsed))
+                {
+                    results = results.Where(d =>
+                    {
+                        var datePart = d.fechaDocPdf.Split(' ')[0];
+                        return DateTime.ParseExact(datePart, "dd/MM/yyyy", CultureInfo.InvariantCulture) <= endDateParsed;
+                    }).ToList();
+                }
+
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al buscar documentos: {ex.Message}");
+            }
         }
 
         [HttpGet("download/{id}")]
