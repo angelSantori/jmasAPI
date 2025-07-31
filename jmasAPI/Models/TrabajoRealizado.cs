@@ -13,6 +13,7 @@ namespace jmasAPI.Models
         public string? comentarioTR { get; set; }
         public string? fotoAntes64TR { get; set; }
         public string? fotoDespues64TR { get; set; }
+        public string? fotoRequiereMaterial64TR { get; set; }
         public int? encuenstaTR { get; set; }
 
         [ForeignKey("Users")]
@@ -29,7 +30,6 @@ namespace jmasAPI.Models
 
         public string? problemaNombre { get; set; }
 
-        [ForeignKey("Salidas")]
-        public int? idSalida { get; set; }
+        public string? folioSalida { get; set; }
     }
 }
