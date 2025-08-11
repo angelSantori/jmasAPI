@@ -433,8 +433,14 @@ namespace jmasAPI.Migrations
                     b.Property<double>("invIniConteo")
                         .HasColumnType("double");
 
+                    b.Property<bool>("invIniEstado")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("invIniFecha")
                         .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("invIniJustificacion")
                         .HasColumnType("longtext");
 
                     b.HasKey("idInvIni");
@@ -1081,6 +1087,9 @@ namespace jmasAPI.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idRole"));
 
                     b.Property<bool>("canAdd")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canCContables")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("canDelete")
