@@ -11,6 +11,8 @@ namespace jmasAPI.Models
         public string invIniFecha { get; set; }
 
         public double invIniConteo { get; set; }
+        public bool invIniEstado { get; set; }
+        public string? invIniJustificacion { get; set; }
 
         [ForeignKey("Productos")]
         public int Id_Producto { get; set; }
