@@ -240,7 +240,8 @@ namespace jmasAPI.Controllers
                         user.role.canDelete,
                         user.role.canManageUsers,
                         user.role.canManageRoles,
-                        user.role.canEvaluar
+                        user.role.canEvaluar,
+                        user.role.canCContables
                     } : null
                 }
             });
