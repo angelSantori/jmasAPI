@@ -133,6 +133,27 @@ namespace jmasAPI.Controllers
             return NoContent();
         }
 
+        // PATCH
+        // PATCH: api/Productos/5/ActualizarInventario
+        [HttpPatch("{id}/ActualizarInventario")]
+        public async Task<IActionResult> UpdateInventario(
+            int id,
+            [FromBody] UpdateInventarioDto request)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+
+            // Actualiza existencia y almacén
+            producto.prodExistencia = request.Existencia;
+            producto.Id_Almacen = request.IdAlmacen;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         // POST: api/Productos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
