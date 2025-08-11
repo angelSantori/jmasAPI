@@ -42,6 +42,24 @@ namespace jmasAPI.Controllers
             return cContable;
         }
 
+        [HttpGet("ProductosSinCuenta")]
+        public async Task<ActionResult<IEnumerable<int>>> GetProductosSinCuenta()
+        {
+            // Obtener todos los IDs de productos que ya tienen cuenta
+            var productosConCuenta = await _context.CContable
+                .Select(cc => cc.idProducto)
+                .Distinct()
+                .ToListAsync();
+
+            // Obtener todos los IDs de productos que NO tienen cuenta
+            var productosSinCuenta = await _context.Productos
+                .Where(p => !productosConCuenta.Contains(p.Id_Producto))
+                .Select(p => p.Id_Producto)
+                .ToListAsync();
+
+            return Ok(productosSinCuenta);
+        }
+
         // GET: api/CContables/ByProducto/{productoId}
         [HttpGet("ByProducto/{productoId}")]
         public async Task<ActionResult<IEnumerable<CContable>>> GetCCxProducto(int productoId)
