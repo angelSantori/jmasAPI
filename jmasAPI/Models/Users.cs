@@ -25,6 +25,10 @@ namespace jmasAPI.Models
         [StringLength(255)]
         public string User_Password { get; set; }
 
+        public string? User_HuellaFacial { get; set; }
+
+        public string? User_Rostro64 { get; set; }
+
         [StringLength(50)]
         public string User_Rol {  get; set; }
 
