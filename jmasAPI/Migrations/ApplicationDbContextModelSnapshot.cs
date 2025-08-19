@@ -308,6 +308,32 @@ namespace jmasAPI.Migrations
                     b.ToTable("Almacenes");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Asistencia", b =>
+                {
+                    b.Property<int>("idAsistencia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idAsistencia"));
+
+                    b.Property<string>("fechaAsistencia")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("horaAsistencia")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("idUser")
+                        .HasColumnType("int");
+
+                    b.HasKey("idAsistencia");
+
+                    b.HasIndex("idUser");
+
+                    b.ToTable("asistencias");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.CContable", b =>
                 {
                     b.Property<int>("Id_CConTable")
@@ -891,6 +917,9 @@ namespace jmasAPI.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idOrdenServicio"));
 
+                    b.Property<string>("comentarioOS")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("contactoOS")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -906,12 +935,6 @@ namespace jmasAPI.Migrations
                     b.Property<string>("folioOS")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<int?>("idCalle")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("idColonia")
-                        .HasColumnType("int");
 
                     b.Property<int>("idMedio")
                         .HasColumnType("int");
@@ -936,10 +959,6 @@ namespace jmasAPI.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("idOrdenServicio");
-
-                    b.HasIndex("idCalle");
-
-                    b.HasIndex("idColonia");
 
                     b.HasIndex("idMedio");
 
@@ -1306,6 +1325,9 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<string>("User_HuellaFacial")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("User_Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1320,6 +1342,9 @@ namespace jmasAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<string>("User_Rostro64")
+                        .HasColumnType("longtext");
 
                     b.Property<int?>("idRole")
                         .HasColumnType("int");
@@ -1459,6 +1484,15 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Users", null)
                         .WithMany()
                         .HasForeignKey("Id_User")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jmasAPI.Models.Asistencia", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUser")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1604,16 +1638,6 @@ namespace jmasAPI.Migrations
 
             modelBuilder.Entity("jmasAPI.Models.OrdenServicio", b =>
                 {
-                    b.HasOne("jmasAPI.Models.Calle", null)
-                        .WithMany()
-                        .HasForeignKey("idCalle")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("jmasAPI.Models.Colonia", null)
-                        .WithMany()
-                        .HasForeignKey("idColonia")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("jmasAPI.Models.MedioOrdenServicio", null)
                         .WithMany()
                         .HasForeignKey("idMedio")

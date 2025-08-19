@@ -65,9 +65,18 @@ namespace jmasAPI
         public DbSet<MedioOrdenServicio> medioOrdenServicio { get; set; } = default!;
 
         public DbSet<EntrevistaPadron> entrevistaPadron { get; set; } = default!;
+
+        public DbSet<Asistencia> asistencias { get; set; } = default!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            //  Asistencias
+            modelBuilder.Entity<Asistencia>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(userAsistencia => userAsistencia.idUser)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //  Entrevista Padron
             modelBuilder.Entity<EntrevistaPadron>()
@@ -138,18 +147,6 @@ namespace jmasAPI
                 .HasOne<TipoProblema>()
                 .WithMany()
                 .HasForeignKey(osTP => osTP.idTipoProblema)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<OrdenServicio>()
-                .HasOne<Calle>()
-                .WithMany()
-                .HasForeignKey(osCalle => osCalle.idCalle)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<OrdenServicio>()
-                .HasOne<Colonia>()
-                .WithMany()
-                .HasForeignKey(osColonia => osColonia.idColonia)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<OrdenServicio>()
