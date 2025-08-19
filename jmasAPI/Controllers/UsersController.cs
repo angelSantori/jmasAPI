@@ -100,7 +100,7 @@ namespace jmasAPI.Controllers
                 return Conflict("La palabra de acceso ya está en uso por otro usuario");
             }
 
-            //Manejar el cambio de rol si es necesario
+            // Manejar el cambio de rol si es necesario
             if (users.idRole.HasValue)
             {
                 var newRole = await _context.Role.FindAsync(users.idRole);
@@ -110,17 +110,29 @@ namespace jmasAPI.Controllers
                 }
                 existingUser.role = newRole;
                 existingUser.idRole = users.idRole;
-            } else
+            }
+            else
             {
                 // Si no se envía idRole, mantener el actual o establecerlo como null
                 existingUser.idRole = existingUser.idRole;
             }
 
-            // Actualizar los demás campos
+            // Actualizar los campos básicos
             existingUser.User_Name = users.User_Name;
             existingUser.User_Contacto = users.User_Contacto;
             existingUser.User_Access = users.User_Access;
             existingUser.User_Rol = users.User_Rol;
+
+            // Actualizar campos biométricos solo si se proporcionan nuevos valores
+            if (!string.IsNullOrEmpty(users.User_Rostro64))
+            {
+                existingUser.User_Rostro64 = users.User_Rostro64;
+            }
+
+            if (!string.IsNullOrEmpty(users.User_HuellaFacial))
+            {
+                existingUser.User_HuellaFacial = users.User_HuellaFacial;
+            }
 
             // Manejar cambio de contraseña (solo si se proporcionó una nueva)
             if (!string.IsNullOrEmpty(users.User_Password) && users.User_Password != existingUser.User_Password)
