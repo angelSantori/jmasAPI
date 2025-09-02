@@ -23,6 +23,8 @@ namespace jmasAPI.Models
         public string Salida_Fecha { get; set; }
 
         public string? Salida_Comentario { get; set; }
+
+        public string? Salida_Imag64Orden { get; set; }
         
         [StringLength(25)]
         public string? Salida_TipoTrabajo { get; set; }
@@ -53,5 +55,8 @@ namespace jmasAPI.Models
 
         [ForeignKey("OrdenServicio")]
         public int? idOrdenServicio { get; set; }
+
+        [ForeignKey("Users")]
+        public int? idUserAutoriza { get; set; }
     }
 }
