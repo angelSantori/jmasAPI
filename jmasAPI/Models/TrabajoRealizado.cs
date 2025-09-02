@@ -14,7 +14,8 @@ namespace jmasAPI.Models
         public string? fotoAntes64TR { get; set; }
         public string? fotoDespues64TR { get; set; }
         public string? fotoRequiereMaterial64TR { get; set; }
-        public int? encuenstaTR { get; set; }
+        public string? firma64TR { get; set; }
+        public string? estadoTR { get; set; }
 
         [ForeignKey("Users")]
         public int? idUserTR { get; set; }
