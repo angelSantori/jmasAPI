@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text.Json;
+using System.Text;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class AjustesMasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly IConfiguration _configuration;
 
-        public AjustesMasController(ApplicationDbContext context)
+        public AjustesMasController(ApplicationDbContext context, IHttpClientFactory clientFactory, IConfiguration configuration)
         {
             _context = context;
+            _clientFactory = clientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/AjustesMas
@@ -58,7 +64,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/AjustesMas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAjustesMas(int id, AjustesMas ajustesMas)
         {
@@ -72,6 +77,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarAjusteMasNube(ajustesMas, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -89,12 +95,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/AjustesMas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<AjustesMas>> PostAjustesMas(AjustesMas ajustesMas)
         {
             _context.AjustesMas.Add(ajustesMas);
             await _context.SaveChangesAsync();
+            await ReplicarAjusteMasNube(ajustesMas, "POST");
 
             return CreatedAtAction("GetAjustesMas", new { id = ajustesMas.Id_AjusteMas }, ajustesMas);
         }
@@ -111,6 +117,7 @@ namespace jmasAPI.Controllers
 
             _context.AjustesMas.Remove(ajustesMas);
             await _context.SaveChangesAsync();
+            await ReplicarAjusteMasNube(ajustesMas, "DELETE");
 
             return NoContent();
         }
@@ -118,6 +125,55 @@ namespace jmasAPI.Controllers
         private bool AjustesMasExists(int id)
         {
             return _context.AjustesMas.Any(e => e.Id_AjusteMas == id);
+        }
+
+
+        private async Task ReplicarAjusteMasNube(AjustesMas ajustesMas, string metodo) 
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+
+            try
+            {
+                var client = _clientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/AjustesMas";
+
+                var jsonContent = JsonSerializer.Serialize(ajustesMas);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo) 
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{ajustesMas.Id_AjusteMas}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{ajustesMas.Id_AjusteMas}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar AJUSTEMAS en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción AJUSTEMAS al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

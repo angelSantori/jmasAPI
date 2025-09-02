@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class EntrevistaPadronsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public EntrevistaPadronsController(ApplicationDbContext context)
+        public EntrevistaPadronsController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/EntrevistaPadrons
@@ -67,7 +73,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/EntrevistaPadrons/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEntrevistaPadron(int id, EntrevistaPadron entrevistaPadron)
         {
@@ -81,6 +86,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarEntrevistaPadron(entrevistaPadron, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -98,12 +104,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/EntrevistaPadrons
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<EntrevistaPadron>> PostEntrevistaPadron(EntrevistaPadron entrevistaPadron)
         {
             _context.entrevistaPadron.Add(entrevistaPadron);
             await _context.SaveChangesAsync();
+            await ReplicarEntrevistaPadron(entrevistaPadron, "POST");
 
             return CreatedAtAction("GetEntrevistaPadron", new { id = entrevistaPadron.idEntrevistaPadron }, entrevistaPadron);
         }
@@ -127,6 +133,52 @@ namespace jmasAPI.Controllers
         private bool EntrevistaPadronExists(int id)
         {
             return _context.entrevistaPadron.Any(e => e.idEntrevistaPadron == id);
+        }
+
+        private async Task ReplicarEntrevistaPadron(EntrevistaPadron entrevistaPadron, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/EntrevistaPadrons";
+
+                var jsonContent = JsonSerializer.Serialize(entrevistaPadron);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{entrevistaPadron.idEntrevistaPadron}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{entrevistaPadron.idEntrevistaPadron}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar COLONIA en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción COLONIA al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

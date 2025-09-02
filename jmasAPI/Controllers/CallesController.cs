@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text.Json;
+using System.Text;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class CallesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly IConfiguration _configuration;
 
-        public CallesController(ApplicationDbContext context)
+        public CallesController(ApplicationDbContext context, IHttpClientFactory clientFactory, IConfiguration configuration)
         {
             _context = context;
+            _clientFactory = clientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Calles
@@ -58,7 +64,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Calles/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCalle(int id, Calle calle)
         {
@@ -72,6 +77,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarCalleEnNube(calle, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -89,12 +95,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Calles
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Calle>> PostCalle(Calle calle)
         {
             _context.Calle.Add(calle);
             await _context.SaveChangesAsync();
+            await ReplicarCalleEnNube(calle, "POST");
 
             return CreatedAtAction("GetCalle", new { id = calle.idCalle }, calle);
         }
@@ -111,6 +117,7 @@ namespace jmasAPI.Controllers
 
             _context.Calle.Remove(calle);
             await _context.SaveChangesAsync();
+            await ReplicarCalleEnNube(calle, "DELETE");
 
             return NoContent();
         }
@@ -118,6 +125,56 @@ namespace jmasAPI.Controllers
         private bool CalleExists(int id)
         {
             return _context.Calle.Any(e => e.idCalle == id);
+        }
+
+        private async Task ReplicarCalleEnNube(Calle calle, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+
+            try
+            {
+                var client = _clientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Calles";
+
+                var jsonContent = JsonSerializer.Serialize(calle);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo) 
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{calle.idCalle}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{calle.idCalle}");
+                        break;
+                    default:
+                        return;
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar CALLE en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción CALLE al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

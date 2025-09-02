@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class SalidasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public SalidasController(ApplicationDbContext context)
+        public SalidasController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Salidas
@@ -154,7 +160,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Salidas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSalidas(int id, Salidas salidas)
         {
@@ -168,6 +173,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaSalidaNube(salidas, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -185,12 +191,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Salidas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Salidas>> PostSalidas(Salidas salidas)
         {
             _context.Salidas.Add(salidas);
             await _context.SaveChangesAsync();
+            await ReplicaSalidaNube(salidas, "POST");
 
             return CreatedAtAction("GetSalidas", new { id = salidas.Id_Salida }, salidas);
         }
@@ -214,6 +220,53 @@ namespace jmasAPI.Controllers
         private bool SalidasExists(int id)
         {
             return _context.Salidas.Any(e => e.Id_Salida == id);
+        }
+
+        private async Task ReplicaSalidaNube(Salidas salidas, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Salidas";
+
+                var jsonContent = JsonSerializer.Serialize(salidas);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{salidas.Id_Salida}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{salidas.Id_Salida}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar SALIDA en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción SALIDA al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

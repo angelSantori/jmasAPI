@@ -13,6 +13,7 @@ using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -23,12 +24,14 @@ namespace jmasAPI.Controllers
         private readonly ApplicationDbContext _context;        
         private readonly IConfiguration _configuration;
         private readonly IPasswordHasher<Users> _passwordHasher;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public UsersController(ApplicationDbContext context, IPasswordHasher<Users> passwordHasher, IConfiguration configuration)
+        public UsersController(ApplicationDbContext context, IPasswordHasher<Users> passwordHasher, IConfiguration configuration, IHttpClientFactory clientFactory)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
+            _httpClientFactory = clientFactory;
         }        
 
         // GET: api/Users
@@ -148,6 +151,8 @@ namespace jmasAPI.Controllers
                 await _context.Entry(existingUser)
                     .Reference(u => u.role)
                     .LoadAsync();
+
+                await ReplicaUserNube(users, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -202,6 +207,8 @@ namespace jmasAPI.Controllers
             await _context.Entry(users)
                 .Reference(u => u.role)
                 .LoadAsync();
+
+            await ReplicaUserNube(users, "POST");
 
             return CreatedAtAction("GetUsers", new { id = users.Id_User }, users);
         }
@@ -300,6 +307,53 @@ namespace jmasAPI.Controllers
         private bool UsersExists(int id)
         {
             return _context.Users.Any(e => e.Id_User == id);
+        }
+
+        private async Task ReplicaUserNube(Users users, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Users";
+
+                var jsonContent = JsonSerializer.Serialize(users);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{users.Id_User}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{users.Id_User}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar USERS en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción USERS al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

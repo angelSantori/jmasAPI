@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class LectEnviarsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public LectEnviarsController(ApplicationDbContext context)
+        public LectEnviarsController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/LectEnviars
@@ -43,7 +49,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/LectEnviars/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLectEnviar(int id, LectEnviar lectEnviar)
         {
@@ -57,6 +62,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaLectEnviarNube(lectEnviar, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -74,12 +80,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/LectEnviars
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<LectEnviar>> PostLectEnviar(LectEnviar lectEnviar)
         {
             _context.LectEnviar.Add(lectEnviar);
             await _context.SaveChangesAsync();
+            await ReplicaLectEnviarNube(lectEnviar, "POST");
 
             return CreatedAtAction("GetLectEnviar", new { id = lectEnviar.idLectEnviar }, lectEnviar);
         }
@@ -103,6 +109,53 @@ namespace jmasAPI.Controllers
         private bool LectEnviarExists(int id)
         {
             return _context.LectEnviar.Any(e => e.idLectEnviar == id);
+        }
+
+        private async Task ReplicaLectEnviarNube(LectEnviar lectEnviar, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/LectEnviars";
+
+                var jsonContent = JsonSerializer.Serialize(lectEnviar);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{lectEnviar.idLectEnviar}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{lectEnviar.idLectEnviar}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar LECTENVIAR en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción LECTENVIAR al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

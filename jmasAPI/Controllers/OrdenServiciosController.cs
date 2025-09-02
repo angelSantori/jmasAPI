@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class OrdenServiciosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public OrdenServiciosController(ApplicationDbContext context)
+        public OrdenServiciosController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/ordenServicios
@@ -74,8 +80,7 @@ namespace jmasAPI.Controllers
             return Ok($"OS{nextNumber}");
         }
 
-        // PUT: api/ordenServicioes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/ordenServicios/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutordenServicio(int id, OrdenServicio ordenServicio)
         {
@@ -89,6 +94,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaOrdenServicioNube(ordenServicio, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -108,12 +114,12 @@ namespace jmasAPI.Controllers
 
 
         // POST: api/ordenServicioes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<OrdenServicio>> PostordenServicio(OrdenServicio ordenServicio)
         {
             _context.ordenServicio.Add(ordenServicio);
             await _context.SaveChangesAsync();
+            await ReplicaOrdenServicioNube(ordenServicio, "POST");
 
             return CreatedAtAction("GetordenServicio", new { id = ordenServicio.idOrdenServicio}, ordenServicio);
         }
@@ -137,6 +143,53 @@ namespace jmasAPI.Controllers
         private bool ordenServicioExists(int id)
         {
             return _context.ordenServicio.Any(e => e.idOrdenServicio == id);
+        }
+
+        private async Task ReplicaOrdenServicioNube(OrdenServicio ordenServicio, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/ordenServicios";
+
+                var jsonContent = JsonSerializer.Serialize(ordenServicio);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{ordenServicio.idOrdenServicio}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{ordenServicio.idOrdenServicio}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar ORDENSERVICIO en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción ORDENSERVICIO al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

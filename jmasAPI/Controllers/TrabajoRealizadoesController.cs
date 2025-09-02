@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -16,10 +18,14 @@ namespace jmasAPI.Controllers
     public class TrabajoRealizadoesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public TrabajoRealizadoesController(ApplicationDbContext context)
+        public TrabajoRealizadoesController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/TrabajoRealizadoes
@@ -64,7 +70,7 @@ namespace jmasAPI.Controllers
         public async Task<ActionResult<string>> GetNextTRCodFolio()
         {
             var lastTR = await _context.trabajoRealizado
-                .OrderByDescending(tr => tr.idOrdenServicio)
+                .OrderByDescending(tr => tr.idTrabajoRealizado)
                 .FirstOrDefaultAsync();
 
             int nextNumber = lastTR != null
@@ -131,8 +137,7 @@ namespace jmasAPI.Controllers
         }
 
 
-        // PUT: api/TrabajoRealizadoes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/TrabajoRealizadoes/5        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTrabajoRealizado(int id, TrabajoRealizado trabajoRealizado)
         {
@@ -146,6 +151,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaTrabajoRealizadoNube(trabajoRealizado, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -163,12 +169,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/TrabajoRealizadoes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<TrabajoRealizado>> PostTrabajoRealizado(TrabajoRealizado trabajoRealizado)
         {
             _context.trabajoRealizado.Add(trabajoRealizado);
             await _context.SaveChangesAsync();
+            await ReplicaTrabajoRealizadoNube(trabajoRealizado, "POST");
 
             return CreatedAtAction("GetTrabajoRealizado", new { id = trabajoRealizado.idTrabajoRealizado }, trabajoRealizado);
         }
@@ -192,6 +198,53 @@ namespace jmasAPI.Controllers
         private bool TrabajoRealizadoExists(int id)
         {
             return _context.trabajoRealizado.Any(e => e.idTrabajoRealizado == id);
+        }
+
+        private async Task ReplicaTrabajoRealizadoNube(TrabajoRealizado trabajoRealizado, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/TrabajoRealizadoes";
+
+                var jsonContent = JsonSerializer.Serialize(trabajoRealizado);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{trabajoRealizado.idTrabajoRealizado}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{trabajoRealizado.idTrabajoRealizado}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar TRABAJOREALIZADO en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción TRABAJOREALIZADO al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class JuntasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public JuntasController(ApplicationDbContext context)
+        public JuntasController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Juntas
@@ -43,7 +49,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Juntas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJuntas(int id, Juntas juntas)
         {
@@ -57,6 +62,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaJuntaNube(juntas, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -74,12 +80,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Juntas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Juntas>> PostJuntas(Juntas juntas)
         {
             _context.Juntas.Add(juntas);
             await _context.SaveChangesAsync();
+            await ReplicaJuntaNube(juntas, "POST");
 
             return CreatedAtAction("GetJuntas", new { id = juntas.Id_Junta }, juntas);
         }
@@ -103,6 +109,53 @@ namespace jmasAPI.Controllers
         private bool JuntasExists(int id)
         {
             return _context.Juntas.Any(e => e.Id_Junta == id);
+        }
+
+        private async Task ReplicaJuntaNube(Juntas juntas, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Juntas";
+
+                var jsonContent = JsonSerializer.Serialize(juntas);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{juntas.Id_Junta}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{juntas.Id_Junta}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar JUNTA en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción JUNTA al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

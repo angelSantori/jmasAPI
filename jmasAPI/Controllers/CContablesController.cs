@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class CContablesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public CContablesController(ApplicationDbContext context)
+        public CContablesController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/CContables
@@ -77,7 +83,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/CContables/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCContable(int id, CContable cContable)
         {
@@ -91,6 +96,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarCContableNube(cContable, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -108,12 +114,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/CContables
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<CContable>> PostCContable(CContable cContable)
         {
             _context.CContable.Add(cContable);
             await _context.SaveChangesAsync();
+            await ReplicarCContableNube(cContable, "POST");
 
             return CreatedAtAction("GetCContable", new { id = cContable.Id_CConTable }, cContable);
         }
@@ -130,6 +136,7 @@ namespace jmasAPI.Controllers
 
             _context.CContable.Remove(cContable);
             await _context.SaveChangesAsync();
+            await ReplicarCContableNube(cContable, "DELETE");
 
             return NoContent();
         }
@@ -137,6 +144,53 @@ namespace jmasAPI.Controllers
         private bool CContableExists(int id)
         {
             return _context.CContable.Any(e => e.Id_CConTable == id);
+        }
+
+        private async Task ReplicarCContableNube(CContable ccontable, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/CContables";
+
+                var jsonContent = JsonSerializer.Serialize(ccontable);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{ccontable.Id_CConTable}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{ccontable.Id_CConTable}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar CCONTABLE en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción CCONTABLE al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

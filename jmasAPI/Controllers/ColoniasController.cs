@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class ColoniasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public ColoniasController(ApplicationDbContext context)
+        public ColoniasController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Colonias
@@ -58,7 +64,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Colonias/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutColonia(int id, Colonia colonia)
         {
@@ -72,6 +77,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarColoniasNube(colonia, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -89,12 +95,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Colonias
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Colonia>> PostColonia(Colonia colonia)
         {
             _context.Colonia.Add(colonia);
             await _context.SaveChangesAsync();
+            await ReplicarColoniasNube(colonia, "POST");
 
             return CreatedAtAction("GetColonia", new { id = colonia.idColonia }, colonia);
         }
@@ -111,6 +117,7 @@ namespace jmasAPI.Controllers
 
             _context.Colonia.Remove(colonia);
             await _context.SaveChangesAsync();
+            await ReplicarColoniasNube(colonia, "DELETE");
 
             return NoContent();
         }
@@ -118,6 +125,53 @@ namespace jmasAPI.Controllers
         private bool ColoniaExists(int id)
         {
             return _context.Colonia.Any(e => e.idColonia == id);
+        }
+
+        private async Task ReplicarColoniasNube(Colonia colonia, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Colonias";
+
+                var jsonContent = JsonSerializer.Serialize(colonia);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{colonia.idColonia}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{colonia.idColonia}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar COLONIA en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción COLONIA al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

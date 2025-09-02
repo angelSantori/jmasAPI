@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text.Json;
+using System.Text;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class AlmacenesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly IConfiguration _configuration;
 
-        public AlmacenesController(ApplicationDbContext context)
+        public AlmacenesController(ApplicationDbContext context, IHttpClientFactory clientFactory, IConfiguration configuration)
         {
             _context = context;
+            _clientFactory = clientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Almacenes
@@ -43,7 +49,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Almacenes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAlmacenes(int id, Almacenes almacenes)
         {
@@ -57,6 +62,9 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                //  Replicar en la nube después de editar
+                await ReplicarAlmacenEnNube(almacenes, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -74,12 +82,13 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Almacenes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Almacenes>> PostAlmacenes(Almacenes almacenes)
         {
             _context.Almacenes.Add(almacenes);
             await _context.SaveChangesAsync();
+
+            await ReplicarAlmacenEnNube(almacenes, "POST");
 
             return CreatedAtAction("GetAlmacenes", new { id = almacenes.Id_Almacen }, almacenes);
         }
@@ -97,12 +106,58 @@ namespace jmasAPI.Controllers
             _context.Almacenes.Remove(almacenes);
             await _context.SaveChangesAsync();
 
+            await ReplicarAlmacenEnNube(almacenes, "DELETE");
+
             return NoContent();
         }
 
         private bool AlmacenesExists(int id)
         {
             return _context.Almacenes.Any(e => e.Id_Almacen == id);
+        }
+
+        private async Task ReplicarAlmacenEnNube(Almacenes almacen, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:UrlApiNube");
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _clientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Almacenes";
+
+                var jsonContent = JsonSerializer.Serialize(almacen);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{almacen.Id_Almacen}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{almacen.Id_Almacen}");
+                        break;
+                    default:
+                        return;
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error al replicar ALMACEN en la nube: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción ALMACEN al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

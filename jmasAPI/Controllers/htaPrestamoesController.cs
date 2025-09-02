@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class htaPrestamosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public htaPrestamosController(ApplicationDbContext context)
+        public htaPrestamosController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/htaPrestamos
@@ -88,7 +94,6 @@ namespace jmasAPI.Controllers
 
 
         // PUT: api/htaPrestamos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PuthtaPrestamo(int id, htaPrestamo htaPrestamo)
         {
@@ -102,6 +107,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaHtaPrestamoNube(htaPrestamo, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -119,12 +125,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/htaPrestamos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<htaPrestamo>> PosthtaPrestamo(htaPrestamo htaPrestamo)
         {
             _context.htaPrestamo.Add(htaPrestamo);
             await _context.SaveChangesAsync();
+            await ReplicaHtaPrestamoNube(htaPrestamo, "POST");
 
             return CreatedAtAction("GethtaPrestamo", new { id = htaPrestamo.idHtaPrestamo }, htaPrestamo);
         }
@@ -148,6 +154,53 @@ namespace jmasAPI.Controllers
         private bool htaPrestamoExists(int id)
         {
             return _context.htaPrestamo.Any(e => e.idHtaPrestamo == id);
+        }
+
+        private async Task ReplicaHtaPrestamoNube(htaPrestamo htaPrestamo, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/htaPrestamos";
+
+                var jsonContent = JsonSerializer.Serialize(htaPrestamo);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{htaPrestamo.idHtaPrestamo}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{htaPrestamo.idHtaPrestamo}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar HTAPRESTAMO en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción HTAPRESTAMO al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

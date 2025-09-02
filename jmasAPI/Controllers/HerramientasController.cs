@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class HerramientasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public HerramientasController(ApplicationDbContext context)
+        public HerramientasController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Herramientas
@@ -68,7 +74,7 @@ namespace jmasAPI.Controllers
             }
 
             var herramientas = await _context.Herramienta
-                .Where(h => h.htaEstado == estado) 
+                .Where(h => h.htaEstado == estado)
                 .ToListAsync();
 
             if (herramientas == null || herramientas.Count == 0)
@@ -94,6 +100,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaHerramientaNube(herramienta, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -116,6 +123,7 @@ namespace jmasAPI.Controllers
         {
             _context.Herramienta.Add(herramienta);
             await _context.SaveChangesAsync();
+            await ReplicaHerramientaNube(herramienta, "POST");
 
             return CreatedAtAction("GetHerramienta", new { id = herramienta.idHerramienta }, herramienta);
         }
@@ -139,6 +147,53 @@ namespace jmasAPI.Controllers
         private bool HerramientaExists(int id)
         {
             return _context.Herramienta.Any(e => e.idHerramienta == id);
+        }
+
+        private async Task ReplicaHerramientaNube(Herramienta herramienta, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Herramientas";
+
+                var jsonContent = JsonSerializer.Serialize(herramienta);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{herramienta.idHerramienta}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{herramienta.idHerramienta}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar HERRAMIENTA en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción HERRAMIENTA al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class CapturaInvInisController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public CapturaInvInisController(ApplicationDbContext context)
+        public CapturaInvInisController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/CapturaInvInis
@@ -84,7 +90,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/CapturaInvInis/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCapturaInvIni(int id, CapturaInvIni capturaInvIni)
         {
@@ -98,6 +103,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarCapturaInvIniNube(capturaInvIni, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -115,12 +121,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/CapturaInvInis
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<CapturaInvIni>> PostCapturaInvIni(CapturaInvIni capturaInvIni)
         {
             _context.CapturaInvIni.Add(capturaInvIni);
             await _context.SaveChangesAsync();
+            await ReplicarCapturaInvIniNube(capturaInvIni, "POST");
 
             return CreatedAtAction("GetCapturaInvIni", new { id = capturaInvIni.idInvIni }, capturaInvIni);
         }
@@ -137,6 +143,7 @@ namespace jmasAPI.Controllers
 
             _context.CapturaInvIni.Remove(capturaInvIni);
             await _context.SaveChangesAsync();
+            await ReplicarCapturaInvIniNube(capturaInvIni, "DELETE");
 
             return NoContent();
         }
@@ -144,6 +151,53 @@ namespace jmasAPI.Controllers
         private bool CapturaInvIniExists(int id)
         {
             return _context.CapturaInvIni.Any(e => e.idInvIni == id);
+        }
+
+        private async Task ReplicarCapturaInvIniNube(CapturaInvIni capturaInvIni, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/CapturaInvInis";
+
+                var jsonContent = JsonSerializer.Serialize(capturaInvIni);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo) 
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{capturaInvIni.idInvIni}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{capturaInvIni.idInvIni}");
+                        break;
+                    default:
+                        return;
+                }
+                if(!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar CAPTURAINVINI en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción CAPTURAINVINI al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

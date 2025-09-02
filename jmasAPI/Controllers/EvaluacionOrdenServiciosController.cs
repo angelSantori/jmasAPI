@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class EvaluacionOrdenServiciosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public EvaluacionOrdenServiciosController(ApplicationDbContext context)
+        public EvaluacionOrdenServiciosController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/evaluacionOrdenServicioes
@@ -67,7 +73,6 @@ namespace jmasAPI.Controllers
         }
  
         // PUT: api/evaluacionOrdenServicioes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutevaluacionOrdenServicio(int id, EvaluacionOrdenServicio evaluacionOrdenServicio)
         {
@@ -81,6 +86,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarEvaluacionOSNube(evaluacionOrdenServicio, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -98,12 +104,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/evaluacionOrdenServicioes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<EvaluacionOrdenServicio>> PostevaluacionOrdenServicio(EvaluacionOrdenServicio evaluacionOrdenServicio)
         {
             _context.evaluacionOrdenServicio.Add(evaluacionOrdenServicio);
             await _context.SaveChangesAsync();
+            await ReplicarEvaluacionOSNube(evaluacionOrdenServicio, "POST");
 
             return CreatedAtAction("GetevaluacionOrdenServicio", new { id = evaluacionOrdenServicio.idEvaluacionOrdenServicio}, evaluacionOrdenServicio);
         }
@@ -127,6 +133,53 @@ namespace jmasAPI.Controllers
         private bool evaluacionOrdenServicioExists(int id)
         {
             return _context.evaluacionOrdenServicio.Any(e => e.idEvaluacionOrdenServicio == id);
+        }
+
+        private async Task ReplicarEvaluacionOSNube(EvaluacionOrdenServicio evaluacionOrdenServicio, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/EvaluacionOrdenServicios";
+
+                var jsonContent = JsonSerializer.Serialize(evaluacionOrdenServicio);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{evaluacionOrdenServicio.idOrdenServicio}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{evaluacionOrdenServicio.idOrdenServicio}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar EVALUACIONOS en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción EVALUACIONOS al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

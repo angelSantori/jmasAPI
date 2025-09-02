@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class TipoProblemasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public TipoProblemasController(ApplicationDbContext context)
+        public TipoProblemasController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/TipoProblemas
@@ -43,7 +49,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/TipoProblemas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTipoProblema(int id, TipoProblema tipoProblema)
         {
@@ -57,6 +62,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaTipoProblemaNube(tipoProblema, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -74,12 +80,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/TipoProblemas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<TipoProblema>> PostTipoProblema(TipoProblema tipoProblema)
         {
             _context.tipoProblema.Add(tipoProblema);
             await _context.SaveChangesAsync();
+            await ReplicaTipoProblemaNube(tipoProblema, "POST");
 
             return CreatedAtAction("GetTipoProblema", new { id = tipoProblema.idTipoProblema }, tipoProblema);
         }
@@ -103,6 +109,53 @@ namespace jmasAPI.Controllers
         private bool TipoProblemaExists(int id)
         {
             return _context.tipoProblema.Any(e => e.idTipoProblema == id);
+        }
+
+        private async Task ReplicaTipoProblemaNube(TipoProblema tipoProblema, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/TipoProblemas";
+
+                var jsonContent = JsonSerializer.Serialize(tipoProblema);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{tipoProblema.idTipoProblema}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{tipoProblema.idTipoProblema}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar TIPORPOBLEMA en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción TIPORPOBLEMA al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

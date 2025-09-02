@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
+using Azure;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +18,14 @@ namespace jmasAPI.Controllers
     public class EntradasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public EntradasController(ApplicationDbContext context)
+        public EntradasController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Entradas
@@ -139,7 +146,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Entradas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEntradas(int id, Entradas entradas)
         {
@@ -153,6 +159,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarEntradaNube(entradas, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -169,8 +176,6 @@ namespace jmasAPI.Controllers
             return NoContent();
         }
 
-
-
         // POST: api/Entradas        
         [HttpPost]
         public async Task<ActionResult<Entradas>> PostEntradas(Entradas entradas)
@@ -178,6 +183,7 @@ namespace jmasAPI.Controllers
             //Guardar la entrada
             _context.Entradas.Add(entradas);
             await _context.SaveChangesAsync();
+            await ReplicarEntradaNube(entradas, "POST");
 
             return CreatedAtAction("GetEntradas", new { id = entradas.Id_Entradas }, entradas);
         }        
@@ -201,6 +207,53 @@ namespace jmasAPI.Controllers
         private bool EntradasExists(int id)
         {
             return _context.Entradas.Any(e => e.Id_Entradas == id);
+        }
+
+        private async Task ReplicarEntradaNube(Entradas entradas, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Entradas";
+
+                var jsonContent = JsonSerializer.Serialize(entradas);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{entradas.Id_Entradas}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{entradas.Id_Entradas}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar ENTRADAS en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción ENTRADAS al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

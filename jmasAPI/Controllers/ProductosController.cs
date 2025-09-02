@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class ProductosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public ProductosController(ApplicationDbContext context)
+        public ProductosController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Productos
@@ -103,7 +109,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/Productos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProductos(int id, Productos productos)
         {
@@ -117,6 +122,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicaProductoNube(productos, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -151,16 +157,17 @@ namespace jmasAPI.Controllers
             producto.Id_Almacen = request.IdAlmacen;
 
             await _context.SaveChangesAsync();
+            await ReplicaProductoNube(producto, "PATCH");
             return NoContent();
         }
 
         // POST: api/Productos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Productos>> PostProductos(Productos productos)
         {
             _context.Productos.Add(productos);
             await _context.SaveChangesAsync();
+            await ReplicaProductoNube(productos, "POST");
 
             return CreatedAtAction("GetProductos", new { id = productos.Id_Producto}, productos);
         }
@@ -184,6 +191,76 @@ namespace jmasAPI.Controllers
         private bool ProductosExists(int id)
         {
             return _context.Productos.Any(e => e.Id_Producto == id);
+        }
+
+        private async Task ReplicaProductoNube(Productos productos, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Productos";
+
+                var jsonContent = JsonSerializer.Serialize(productos);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{productos.Id_Producto}", httpContent);
+                        break;
+                    case "PATCH":
+                        var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{apiNubeUrl}/{productos.Id_Producto}")
+                        {
+                            Content = httpContent
+                        };
+                        response = await client.SendAsync(request);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{productos.Id_Producto}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar PRODUCTO en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+
+                    // Si falla el PATCH, intentar con PUT como fallback
+                    if (metodo == "PATCH" && response.StatusCode == System.Net.HttpStatusCode.MethodNotAllowed)
+                    {
+                        Console.WriteLine("Intentando fallback con PUT para PATCH...");
+                        response = await client.PutAsync($"{apiNubeUrl}/{productos.Id_Producto}", httpContent);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            Console.WriteLine($"Producto replicado exitosamente con PUT (fallback): {productos.Id_Producto}");
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Producto replicado exitosamente: {productos.Id_Producto}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción PRODUCTO al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

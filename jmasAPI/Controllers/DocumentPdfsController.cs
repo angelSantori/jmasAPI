@@ -9,6 +9,8 @@ using jmasAPI;
 using jmasAPI.Models;
 using NuGet.Protocol.Core.Types;
 using System.Globalization;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -17,10 +19,14 @@ namespace jmasAPI.Controllers
     public class DocumentPdfsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public DocumentPdfsController(ApplicationDbContext context)
+        public DocumentPdfsController(ApplicationDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/DocumentPdfs
@@ -113,7 +119,6 @@ namespace jmasAPI.Controllers
         }
 
         // PUT: api/DocumentPdfs/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutDocumentPdf(int id, DocumentPdf documentPdf)
         {
@@ -127,6 +132,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarDocumentPdfNube(documentPdf, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -144,12 +150,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/DocumentPdfs
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<DocumentPdf>> PostDocumentPdf(DocumentPdf documentPdf)
         {
             _context.documentPdf.Add(documentPdf);
             await _context.SaveChangesAsync();
+            await ReplicarDocumentPdfNube(documentPdf, "POST");
 
             return CreatedAtAction("GetDocumentPdf", new { id = documentPdf.idDocumentPdf }, documentPdf);
         }
@@ -193,6 +199,53 @@ namespace jmasAPI.Controllers
         private bool DocumentPdfExists(int id)
         {
             return _context.documentPdf.Any(e => e.idDocumentPdf == id);
+        }
+
+        private async Task ReplicarDocumentPdfNube(DocumentPdf documentPdf, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/DocumentPdfs";
+
+                var jsonContent = JsonSerializer.Serialize(documentPdf);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{documentPdf.idDocumentPdf}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{documentPdf.idDocumentPdf}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar DOCUMENTPDF en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción DOCUMENTPDF al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }

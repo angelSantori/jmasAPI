@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jmasAPI;
 using jmasAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace jmasAPI.Controllers
 {
@@ -15,10 +17,14 @@ namespace jmasAPI.Controllers
     public class CanceladosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly IConfiguration _configuration;
 
-        public CanceladosController(ApplicationDbContext context)
+        public CanceladosController(ApplicationDbContext context, IHttpClientFactory clientFactory, IConfiguration configuration)
         {
             _context = context;
+            _clientFactory = clientFactory;
+            _configuration = configuration;
         }
 
         // GET: api/Canceladoes
@@ -42,8 +48,7 @@ namespace jmasAPI.Controllers
             return cancelado;
         }
 
-        // PUT: api/Canceladoes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/Canceladoes/5        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCancelado(int id, Cancelado cancelado)
         {
@@ -57,6 +62,7 @@ namespace jmasAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReplicarCanceladoNube(cancelado, "PUT");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -74,13 +80,12 @@ namespace jmasAPI.Controllers
         }
 
         // POST: api/Canceladoes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Cancelado>> PostCancelado(Cancelado cancelado)
         {
             _context.Cancelado.Add(cancelado);
             await _context.SaveChangesAsync();
-
+            await ReplicarCanceladoNube(cancelado, "POST");
             return CreatedAtAction("GetCancelado", new { id = cancelado.idCancelacion }, cancelado);
         }
 
@@ -103,6 +108,54 @@ namespace jmasAPI.Controllers
         private bool CanceladoExists(int id)
         {
             return _context.Cancelado.Any(e => e.idCancelacion == id);
+        }
+
+        private async Task ReplicarCanceladoNube(Cancelado cancelado, string metodo)
+        {
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
+
+            if (!replicacionHabilitada)
+            {
+                return;
+            }
+
+            try
+            {
+                var client = _clientFactory.CreateClient();
+                string apiNubeUrlBase = _configuration.GetValue<string>("Replicacion:UrlApiNube");
+                string apiNubeUrl = $"{apiNubeUrlBase}/Canceladoes";
+
+                var jsonContent = JsonSerializer.Serialize(cancelado);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response;
+
+                switch (metodo)
+                {
+                    case "POST":
+                        response = await client.PostAsync(apiNubeUrl, httpContent);
+                        break;
+                    case "PUT":
+                        response = await client.PutAsync($"{apiNubeUrl}/{cancelado.idCancelacion}", httpContent);
+                        break;
+                    case "DELETE":
+                        response = await client.DeleteAsync($"{apiNubeUrl}/{cancelado.idCancelacion}");
+                        break;
+                    default:
+                        return;
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error al replicar CANCELADO en la nube: {response.StatusCode}");
+                    Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                    Console.WriteLine($"JSON enviado: {jsonContent}");
+                }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Excepción CANCELADO al replicar en la nube: {ex.Message}");
+            }
         }
     }
 }
