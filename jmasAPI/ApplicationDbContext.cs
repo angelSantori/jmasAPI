@@ -263,6 +263,12 @@ namespace jmasAPI
                 .HasForeignKey(salOT => salOT.idOrdenServicio)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Salidas>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(salUserAutoriza => salUserAutoriza.idUserAutoriza)
+                .OnDelete(DeleteBehavior.Restrict);
+
             //ENTRADAS relaciones
             modelBuilder .Entity<Entradas>()
                 .HasOne<Productos>()

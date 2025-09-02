@@ -1034,6 +1034,9 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("prodEstado")
+                        .HasColumnType("longtext");
+
                     b.Property<double>("prodExistencia")
                         .HasColumnType("double");
 
@@ -1179,6 +1182,9 @@ namespace jmasAPI.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Salida_Imag64Orden")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Salida_Referencia")
                         .HasColumnType("longtext");
 
@@ -1204,6 +1210,9 @@ namespace jmasAPI.Migrations
                     b.Property<int>("idProducto")
                         .HasColumnType("int");
 
+                    b.Property<int?>("idUserAutoriza")
+                        .HasColumnType("int");
+
                     b.HasKey("Id_Salida");
 
                     b.HasIndex("Id_Almacen");
@@ -1223,6 +1232,8 @@ namespace jmasAPI.Migrations
                     b.HasIndex("idPadron");
 
                     b.HasIndex("idProducto");
+
+                    b.HasIndex("idUserAutoriza");
 
                     b.ToTable("Salidas");
                 });
@@ -1255,10 +1266,13 @@ namespace jmasAPI.Migrations
                     b.Property<string>("comentarioTR")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("encuenstaTR")
-                        .HasColumnType("int");
+                    b.Property<string>("estadoTR")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("fechaTR")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("firma64TR")
                         .HasColumnType("longtext");
 
                     b.Property<string>("folioOS")
@@ -1731,6 +1745,11 @@ namespace jmasAPI.Migrations
                         .HasForeignKey("idProducto")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUserAutoriza")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("jmasAPI.Models.TrabajoRealizado", b =>
