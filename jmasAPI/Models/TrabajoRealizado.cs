@@ -17,6 +17,8 @@ namespace jmasAPI.Models
         public string? firma64TR { get; set; }
         public string? estadoTR { get; set; }
 
+        public bool? imagenesCargadas { get; set; }
+
         [ForeignKey("Users")]
         public int? idUserTR { get; set; }
 
