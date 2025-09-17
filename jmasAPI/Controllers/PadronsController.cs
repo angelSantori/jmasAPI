@@ -9,6 +9,10 @@ using jmasAPI;
 using jmasAPI.Models;
 using System.Text;
 using System.Text.Json;
+using System.IO;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http;
+using jmasAPI.DataTransferObjects;
 
 namespace jmasAPI.Controllers
 {
@@ -137,6 +141,146 @@ namespace jmasAPI.Controllers
             await ReplicaPadronNube(padron, "POST");
 
             return CreatedAtAction("GetPadron", new { id = padron.idPadron }, padron);
+        }
+
+        [HttpPost("ImportExcel")]
+        public async Task<ActionResult<ImportResult>> ImportExcel(IFormFile file, [FromQuery] bool updateExisting = true)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No se proporcionó un archivo válido");
+            }
+
+            // Validar tipo de archivo
+            var allowedExtensions = new[] { ".xlsx", ".xls" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest("Solo se permiten archivos Excel (.xlsx, .xls)");
+            }
+
+            try
+            {
+                var importResult = new ImportResult();
+                var padronesParaReplicar = new List<(Padron, string)>(); // Almacenar padrones y operación
+
+                using (var stream = new MemoryStream())
+                {
+                    await file.CopyToAsync(stream);
+                    stream.Position = 0;
+
+                    try
+                    {
+                        using (var workbook = new XLWorkbook(stream))
+                        {
+                            var worksheet = workbook.Worksheet(1); // Primera hoja
+                            if (worksheet == null)
+                            {
+                                return BadRequest("El archivo no contiene hojas de trabajo");
+                            }
+
+                            var rows = worksheet.RowsUsed().Skip(1); // Saltar encabezados
+
+                            foreach (var row in rows)
+                            {
+                                try
+                                {
+                                    var idCell = row.Cell(1);
+                                    var nombreCell = row.Cell(2);
+                                    var direccionCell = row.Cell(3);
+
+                                    // Validar celdas requeridas
+                                    if (nombreCell.IsEmpty() || direccionCell.IsEmpty())
+                                    {
+                                        importResult.Errors.Add($"Fila {row.RowNumber()}: Datos Incompletos");
+                                        continue;
+                                    }
+
+                                    int? id = null;
+                                    if (!idCell.IsEmpty())
+                                    {
+                                        try
+                                        {
+                                            id = idCell.GetValue<int>();
+                                        }
+                                        catch
+                                        {
+                                            importResult.Errors.Add($"Fila {row.RowNumber()}: ID inválido");
+                                            continue;
+                                        }
+                                    }
+
+                                    string nombre = nombreCell.GetValue<string>();
+                                    string direccion = direccionCell.GetValue<string>();
+
+                                    Padron padron;
+                                    string operacion = "";
+
+                                    if (id.HasValue && updateExisting)
+                                    {
+                                        padron = await _context.Padron.FindAsync(id.Value);
+                                        if (padron != null)
+                                        {
+                                            padron.padronNombre = nombre;
+                                            padron.padronDireccion = direccion;
+                                            operacion = "PUT";
+                                            importResult.Updated++;
+                                        }
+                                        else
+                                        {
+                                            padron = new Padron
+                                            {
+                                                idPadron = id.Value,
+                                                padronNombre = nombre,
+                                                padronDireccion = direccion,
+                                            };
+                                            _context.Padron.Add(padron);
+                                            operacion = "POST";
+                                            importResult.Imported++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        padron = new Padron
+                                        {
+                                            padronNombre = nombre,
+                                            padronDireccion = direccion,
+                                        };
+                                        _context.Padron.Add(padron);
+                                        operacion = "POST";
+                                        importResult.Imported++;
+                                    }
+
+                                    // Guardar el padrón y la operación para replicar después
+                                    padronesParaReplicar.Add((padron, operacion));
+                                }
+                                catch (Exception ex)
+                                {
+                                    importResult.Errors.Add($"Fila {row.RowNumber()}: {ex.Message}");
+                                }
+                            }
+
+                            // Guardar todos los cambios en la base de datos primero
+                            await _context.SaveChangesAsync();
+
+                            // Replicar todos los padrones procesados en la nube
+                            foreach (var (padron, operacion) in padronesParaReplicar)
+                            {
+                                await ReplicaPadronNube(padron, operacion);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, $"Error al procesar el archivo Excel: {ex.Message}");
+                    }
+                }
+                return Ok(importResult);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error general al procesar el archivo: {ex.Message}");
+            }
         }
 
         // DELETE: api/Padrons/5
