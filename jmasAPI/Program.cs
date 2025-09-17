@@ -96,9 +96,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configura el middleware de CORS
-app.UseCors("AllowAll");
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -107,6 +104,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Configura el middleware de CORS
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 
