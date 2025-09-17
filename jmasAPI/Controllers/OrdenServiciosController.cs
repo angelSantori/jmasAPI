@@ -80,6 +80,20 @@ namespace jmasAPI.Controllers
             return Ok($"OS{nextNumber}");
         }
 
+
+        private async Task<string> GenerateNextFolio()
+        {
+            var lastOT = await _context.ordenServicio
+                .OrderByDescending(os => os.idOrdenServicio)
+                .FirstOrDefaultAsync();
+
+            int nextNumber = lastOT != null
+                ? int.Parse(lastOT.folioOS.Replace("OS", "")) + 1
+                : 1;
+
+            return $"OS{nextNumber}";
+        }
+
         // PUT: api/ordenServicios/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutordenServicio(int id, OrdenServicio ordenServicio)
@@ -111,12 +125,12 @@ namespace jmasAPI.Controllers
             return NoContent();
         }
 
-
-
-        // POST: api/ordenServicioes
         [HttpPost]
         public async Task<ActionResult<OrdenServicio>> PostordenServicio(OrdenServicio ordenServicio)
         {
+            string nextFolio = await GenerateNextFolio();
+            ordenServicio.folioOS = nextFolio;
+
             _context.ordenServicio.Add(ordenServicio);
             await _context.SaveChangesAsync();
             await ReplicaOrdenServicioNube(ordenServicio, "POST");
