@@ -85,7 +85,26 @@ namespace jmasAPI.Controllers
         public async Task<ActionResult<IEnumerable<TrabajoRealizado>>> GetTRByUser(int userID)
         {
             var trabajos = await _context.trabajoRealizado
-                .Where(tr => tr.idUserTR == userID)
+                .Where(tr => tr.idUserTR == userID && string.IsNullOrEmpty(tr.estadoTR))
+                .Select(tr => new TrabajoRealizado
+                {
+                    // Incluir todos los campos excepto los de imágenes
+                    idTrabajoRealizado = tr.idTrabajoRealizado,
+                    folioTR = tr.folioTR,
+                    fechaTR = tr.fechaTR,
+                    ubicacionTR = tr.ubicacionTR,
+                    comentarioTR = tr.comentarioTR,
+                    // NO incluir: fotoAntes64TR, fotoDespues64TR, fotoRequiereMaterial64TR, firma64TR
+                    estadoTR = tr.estadoTR,
+                    idUserTR = tr.idUserTR,
+                    idOrdenServicio = tr.idOrdenServicio,
+                    folioOS = tr.folioOS,
+                    padronNombre = tr.padronNombre,
+                    padronDireccion = tr.padronDireccion,
+                    problemaNombre = tr.problemaNombre,
+                    folioSalida = tr.folioSalida,
+                    imagenesCargadas = false // Marcar como no cargadas
+                })
                 .ToListAsync();
 
             if (trabajos == null || trabajos.Count == 0)
@@ -94,6 +113,31 @@ namespace jmasAPI.Controllers
             }
 
             return Ok(trabajos);
+        }
+
+        // GET: api/TrabajoRealizadoes/Imagenes/{id}
+        [HttpGet("Imagenes/{id}")]
+        public async Task<ActionResult<TrabajoRealizado>> GetImagenesTrabajo(int id)
+        {
+            var trabajo = await _context.trabajoRealizado
+                .Where(tr => tr.idTrabajoRealizado == id)
+                .Select(tr => new TrabajoRealizado
+                {
+                    idTrabajoRealizado = tr.idTrabajoRealizado,
+                    fotoAntes64TR = tr.fotoAntes64TR,
+                    fotoDespues64TR = tr.fotoDespues64TR,
+                    fotoRequiereMaterial64TR = tr.fotoRequiereMaterial64TR,
+                    firma64TR = tr.firma64TR,
+                    imagenesCargadas = true
+                })
+                .FirstOrDefaultAsync();
+
+            if (trabajo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(trabajo);
         }
 
         //GET: api/TrabajoRealizadoes/ByUserEmpty/{userId}
