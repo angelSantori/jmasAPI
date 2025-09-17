@@ -9,6 +9,7 @@ using jmasAPI;
 using jmasAPI.Models;
 using System.Text;
 using System.Text.Json;
+using jmasAPI.DataTransferObjects;
 
 namespace jmasAPI.Controllers
 {
@@ -32,6 +33,37 @@ namespace jmasAPI.Controllers
         public async Task<ActionResult<IEnumerable<Productos>>> GetProductos()
         {
             return await _context.Productos.ToListAsync();
+        }
+
+        // GET: api/ProductosSinImagen
+        [HttpGet("noImage")]
+        public async Task<ActionResult<IEnumerable<ProductosListaDTO>>> GetProductosNoImage()
+        {
+            try
+            {
+                return await _context.Productos
+                    .Select(p => new ProductosListaDTO
+                    {
+                        id_Producto = p.Id_Producto,
+                        prodDescripcion = p.prodDescripcion,
+                        prodExistencia = p.prodExistencia,
+                        prodMax = p.prodMax,
+                        prodMin = p.prodMin,
+                        prodCosto = p.prodCosto,
+                        prodUbFisica = p.prodUbFisica,
+                        prodUMedSalida = p.prodUMedSalida,
+                        prodUMedEntrada = p.prodUMedEntrada,
+                        prodPrecio = p.prodPrecio,
+                        prodEstado = p.prodEstado,
+                        idProveedor = p.idProveedor,
+                        id_Almacen = p.Id_Almacen
+                    })
+                    .ToListAsync();
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(500, $"Error al cargar productos: {ex.Message}");
+            }
         }
 
         // GET: api/Productos/5
