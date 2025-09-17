@@ -25,7 +25,10 @@ namespace jmasAPI.Models
         public string? Salida_Comentario { get; set; }
 
         public string? Salida_Imag64Orden { get; set; }
-        
+        public string? Salida_DocumentoFirmas { get; set; }
+        public bool Salida_DocumentoFirma { get; set; }
+        public bool Salida_Pagado { get; set; }
+
         [StringLength(25)]
         public string? Salida_TipoTrabajo { get; set; }
 
