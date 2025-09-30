@@ -1181,6 +1181,9 @@ namespace jmasAPI.Migrations
                     b.Property<string>("Salida_DocumentoFirmas")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Salida_DocumentoPago")
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("Salida_Estado")
                         .HasColumnType("tinyint(1)");
 

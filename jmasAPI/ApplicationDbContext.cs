@@ -67,6 +67,7 @@ namespace jmasAPI
         public DbSet<EntrevistaPadron> entrevistaPadron { get; set; } = default!;
 
         public DbSet<Asistencia> asistencias { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
