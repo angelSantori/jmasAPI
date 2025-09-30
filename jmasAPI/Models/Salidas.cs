@@ -26,6 +26,7 @@ namespace jmasAPI.Models
 
         public string? Salida_Imag64Orden { get; set; }
         public string? Salida_DocumentoFirmas { get; set; }
+        public string? Salida_DocumentoPago { get; set; }
         public bool Salida_DocumentoFirma { get; set; }
         public bool Salida_Pagado { get; set; }
 
