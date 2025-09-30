@@ -10,6 +10,7 @@ using jmasAPI.Models;
 using System.Text;
 using System.Text.Json;
 using jmasAPI.DataTransferObjects;
+using jmasAPI.Migrations;
 
 namespace jmasAPI.Controllers
 {
@@ -87,6 +88,9 @@ namespace jmasAPI.Controllers
                     Salida_TipoTrabajo = s.Salida_TipoTrabajo,
                     Salida_Imag64Orden = s.Salida_Imag64Orden,
                     Salida_DocumentoFirmas = s.Salida_DocumentoFirmas,
+                    Salida_DocumentoFirma = s.Salida_DocumentoFirma,
+                    Salida_DocumentoPago = s.Salida_DocumentoPago,
+                    Salida_Pagado = s.Salida_Pagado,
                     idProducto = s.idProducto,
                     Id_User = s.Id_User,
                     Id_Junta = s.Id_Junta,
@@ -139,6 +143,20 @@ namespace jmasAPI.Controllers
                 : 1;
 
             return Ok($"Sal{nextNumber}");
+        }
+
+        // Método privado para obtener el folio como string
+        private async Task<string> GetNextSalidaCodFolioString()
+        {
+            var lastSalida = await _context.Salidas
+                .OrderByDescending(s => s.Id_Salida)
+                .FirstOrDefaultAsync();
+
+            int nextNumber = lastSalida != null
+                ? int.Parse(lastSalida.Salida_CodFolio.Replace("Sal", "")) + 1
+                : 1;
+
+            return $"Sal{nextNumber}";
         }
 
         // GET: api/Salidas/ByUserAsignado/{userId}
@@ -267,6 +285,43 @@ namespace jmasAPI.Controllers
             }
         }
 
+        // POST: api/Salidas/UploadDocumentoPago/{folio}
+        [HttpPost("UploadDocumentoPago/{folio}")]
+        public async Task<IActionResult> UploadDocumentoPago(string folio, IFormFile file)
+        {
+            try 
+            {
+                if (file == null || file.Length == 0) return BadRequest("No se ha proporcionado un archivo válido");
+
+                //  Verificar que existe al menos una salida con este folio
+                var salidasConFolio = await _context.Salidas
+                    .Where(s => s.Salida_CodFolio == folio)
+                    .ToListAsync();
+
+                if (salidasConFolio == null || salidasConFolio.Count == 0) return NotFound($"No se encontraron salidas con el folio: {folio}");
+
+                //  Convertir el archivo a base64
+                using var memoryStream = new MemoryStream();
+                await file.CopyToAsync( memoryStream );
+                var fileBytes = memoryStream.ToArray();
+                var base64String = Convert.ToBase64String( fileBytes );
+
+                //  Actualizar solo la primersa salida del folio con el documento
+                var primeraSalida = salidasConFolio.First();
+                primeraSalida.Salida_DocumentoPago = base64String;
+                primeraSalida.Salida_Pagado = true;
+
+                _context.Entry(primeraSalida).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Documento de pago subido correctamente" });
+            } catch (Exception ex) 
+            {
+                return StatusCode(500, $"Error al subir el documento de pago: {ex.Message}");
+            }
+        }
+
+
         // GET: api/Salidas/GetDocumentoFirmas/{folio}
         [HttpGet("GetDocumentoFirmas/{folio}")]
         public async Task<IActionResult> GetDocumentoFirmas(string folio)
@@ -290,6 +345,31 @@ namespace jmasAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error al recuperar el documento: {ex.Message}");
+            }
+        }
+
+        // GET: api/Salidas/GetDocumentoFirmas/{folio}
+        [HttpGet("GetDocumentoPago/{folio}")]
+        public async Task<IActionResult> GetDocumentoPago(string folio)
+        {
+            try 
+            {
+                //  Buscar la primera salida con este folio que tenga documento pago
+                var salidaConPago = await _context.Salidas
+                    .Where(s => s.Salida_CodFolio == folio && !string.IsNullOrEmpty(s.Salida_DocumentoPago))
+                    .FirstOrDefaultAsync();
+
+                if (salidaConPago == null) return NotFound("No se encontró documento de pago para este folio");
+
+                return Ok(new
+                {
+                    documentoBase64 = salidaConPago.Salida_DocumentoPago,
+                    folio = salidaConPago.Salida_CodFolio
+                });
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(500, $"Error al recuperar el documento pago: {ex.Message}");
             }
         }
 
