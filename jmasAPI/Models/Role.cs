@@ -20,5 +20,11 @@ namespace jmasAPI.Models
         public bool canManageRoles { get; set; }
         public bool canEvaluar {  get; set; }
         public bool canCContables { get; set; }
+        public bool canManageJuntas { get; set; }
+        public bool canManageProveedores { get; set; }
+        public bool canManageContratistas { get; set; }
+        public bool canManageCalles { get; set; }
+        public bool canManageColonias { get; set; }
+        public bool canManageAlmacenes { get; set; }
     }
 }
