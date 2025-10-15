@@ -118,7 +118,7 @@ namespace jmasAPI.Controllers
 
         private async Task ReplicarAlmacenEnNube(Almacenes almacen, string metodo)
         {
-            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:UrlApiNube");
+            bool replicacionHabilitada = _configuration.GetValue<bool>("Replicacion:Habilitada");
             if (!replicacionHabilitada)
             {
                 return;
