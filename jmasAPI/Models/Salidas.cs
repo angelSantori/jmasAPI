@@ -9,26 +9,19 @@ namespace jmasAPI.Models
     {
         [Key]
         public int Id_Salida { get; set; }
-
         public string Salida_CodFolio { get; set; }
-
-        public string? Salida_Referencia { get; set; }
-
+        public string Salida_PresupuestoFolio { get; set; }
         public bool Salida_Estado { get; set; }
-
         public double Salida_Unidades { get; set; }
-
         public double Salida_Costo { get; set; }
-        
         public string Salida_Fecha { get; set; }
-
         public string? Salida_Comentario { get; set; }
-
         public string? Salida_Imag64Orden { get; set; }
         public string? Salida_DocumentoFirmas { get; set; }
         public string? Salida_DocumentoPago { get; set; }
         public bool Salida_DocumentoFirma { get; set; }
         public bool Salida_Pagado { get; set; }
+        public string? salidaFolioOST { get; set; }
 
         [StringLength(25)]
         public string? Salida_TipoTrabajo { get; set; }
@@ -62,5 +55,8 @@ namespace jmasAPI.Models
 
         [ForeignKey("Users")]
         public int? idUserAutoriza { get; set; }
+
+        [ForeignKey("Contratistas")]
+        public int? idContratista { get; set; }
     }
 }
