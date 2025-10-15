@@ -15,5 +15,7 @@ namespace jmasAPI.Models
 
         [StringLength(20)]
         public string Proveedor_Phone { get; set; }
+
+        public string Proveedor_NumeroCuenta { get; set; }
     }
 }
