@@ -494,6 +494,35 @@ namespace jmasAPI.Migrations
                     b.ToTable("Colonia");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Contratistas", b =>
+                {
+                    b.Property<int>("idContratista")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idContratista"));
+
+                    b.Property<string>("contratistaDireccion")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("contratistaNombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("contratistaNumeroCuenta")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("contratistaTelefono")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("idContratista");
+
+                    b.ToTable("Contratistas");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.DocumentPdf", b =>
                 {
                     b.Property<int>("idDocumentPdf")
@@ -994,6 +1023,51 @@ namespace jmasAPI.Migrations
                     b.ToTable("Padron");
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Presupuestos", b =>
+                {
+                    b.Property<int>("idPresupuesto")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("idPresupuesto"));
+
+                    b.Property<int>("idPadron")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idProducto")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idUser")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("presupuestoEstado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("presupuestoFecha")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("presupuestoFolio")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<double>("presupuestoTotal")
+                        .HasColumnType("double");
+
+                    b.Property<double>("presupuestoUnidades")
+                        .HasColumnType("double");
+
+                    b.HasKey("idPresupuesto");
+
+                    b.HasIndex("idPadron");
+
+                    b.HasIndex("idProducto");
+
+                    b.HasIndex("idUser");
+
+                    b.ToTable("presupuestos");
+                });
+
             modelBuilder.Entity("jmasAPI.Models.ProblemasLectura", b =>
                 {
                     b.Property<int>("idProblema")
@@ -1090,6 +1164,10 @@ namespace jmasAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<string>("Proveedor_NumeroCuenta")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Proveedor_Phone")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1121,6 +1199,24 @@ namespace jmasAPI.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("canEvaluar")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageAlmacenes")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageCalles")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageColonias")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageContratistas")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageJuntas")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("canManageProveedores")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("canManageRoles")
@@ -1197,7 +1293,8 @@ namespace jmasAPI.Migrations
                     b.Property<bool>("Salida_Pagado")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Salida_Referencia")
+                    b.Property<string>("Salida_PresupuestoFolio")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Salida_TipoTrabajo")
@@ -1213,6 +1310,9 @@ namespace jmasAPI.Migrations
                     b.Property<int?>("idColonia")
                         .HasColumnType("int");
 
+                    b.Property<int?>("idContratista")
+                        .HasColumnType("int");
+
                     b.Property<int?>("idOrdenServicio")
                         .HasColumnType("int");
 
@@ -1224,6 +1324,9 @@ namespace jmasAPI.Migrations
 
                     b.Property<int?>("idUserAutoriza")
                         .HasColumnType("int");
+
+                    b.Property<string>("salidaFolioOST")
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id_Salida");
 
@@ -1238,6 +1341,8 @@ namespace jmasAPI.Migrations
                     b.HasIndex("idCalle");
 
                     b.HasIndex("idColonia");
+
+                    b.HasIndex("idContratista");
 
                     b.HasIndex("idOrdenServicio");
 
@@ -1697,6 +1802,27 @@ namespace jmasAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("jmasAPI.Models.Presupuestos", b =>
+                {
+                    b.HasOne("jmasAPI.Models.Padron", null)
+                        .WithMany()
+                        .HasForeignKey("idPadron")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.Productos", null)
+                        .WithMany()
+                        .HasForeignKey("idProducto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("jmasAPI.Models.Users", null)
+                        .WithMany()
+                        .HasForeignKey("idUser")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("jmasAPI.Models.Productos", b =>
                 {
                     b.HasOne("jmasAPI.Models.Almacenes", null)
@@ -1743,6 +1869,11 @@ namespace jmasAPI.Migrations
                     b.HasOne("jmasAPI.Models.Colonia", null)
                         .WithMany()
                         .HasForeignKey("idColonia")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("jmasAPI.Models.Contratistas", null)
+                        .WithMany()
+                        .HasForeignKey("idContratista")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("jmasAPI.Models.OrdenServicio", null)
