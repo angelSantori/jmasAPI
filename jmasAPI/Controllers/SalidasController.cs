@@ -41,7 +41,7 @@ namespace jmasAPI.Controllers
                     {
                         Id_Salida = s.Id_Salida,
                         Salida_CodFolio = s.Salida_CodFolio,
-                        Salida_Referencia = s.Salida_Referencia,
+                        Salida_PresupuestoFolio = s.Salida_PresupuestoFolio,
                         Salida_Estado = s.Salida_Estado,
                         Salida_Unidades = s.Salida_Unidades,
                         Salida_Costo = s.Salida_Costo,
@@ -59,7 +59,9 @@ namespace jmasAPI.Controllers
                         idCalle = s.idCalle,
                         idColonia = s.idColonia,
                         idOrdenServicio = s.idOrdenServicio,
-                        idUserAutoriza = s.idUserAutoriza
+                        idUserAutoriza = s.idUserAutoriza,
+                        idContratista = s.idContratista,
+                        salidaFolioOST = s.salidaFolioOST,
                     })
                     .ToListAsync();
             }
@@ -79,7 +81,7 @@ namespace jmasAPI.Controllers
                 {
                     Id_Salida = s.Id_Salida,
                     Salida_CodFolio = s.Salida_CodFolio,
-                    Salida_Referencia = s.Salida_Referencia,
+                    Salida_PresupuestoFolio = s.Salida_PresupuestoFolio,
                     Salida_Estado = s.Salida_Estado,
                     Salida_Unidades = s.Salida_Unidades,
                     Salida_Costo = s.Salida_Costo,
@@ -100,7 +102,9 @@ namespace jmasAPI.Controllers
                     idCalle = s.idCalle,
                     idColonia = s.idColonia,
                     idOrdenServicio = s.idOrdenServicio,
-                    idUserAutoriza = s.idUserAutoriza
+                    idUserAutoriza = s.idUserAutoriza,
+                    salidaFolioOST = s.salidaFolioOST,
+                    idContratista = s.idContratista,
                 })
                 .FirstOrDefaultAsync();
 
@@ -118,7 +122,7 @@ namespace jmasAPI.Controllers
         {
             // Filtrar las entradas cuyo folio coincida con el valor proporcionado
             var salidas = await _context.Salidas
-                .Where(e => e.Salida_CodFolio == folio)
+                .Where(e => EF.Functions.Collate(e.Salida_CodFolio, "utf8mb4_bin") == folio)
                 .ToListAsync();
 
             // Verificar si se encontraron registros
@@ -459,7 +463,6 @@ namespace jmasAPI.Controllers
 
             // Generar un único folio para todas las salidas
             string nextFolio = await GenerateNextFolio();
-            Console.WriteLine($"Generando folio: {nextFolio} para {salidasList.Count} salidas");
 
             foreach (var salida in salidasList)
             {
@@ -468,7 +471,6 @@ namespace jmasAPI.Controllers
             }
 
             await _context.SaveChangesAsync();
-            Console.WriteLine($"Salidas guardadas en local con folio: {nextFolio}");
 
             // Replicar TODAS las salidas del mismo folio en la nube
             await ReplicaMultipleSalidasNube(salidasList);
@@ -498,7 +500,7 @@ namespace jmasAPI.Controllers
                     // Mantener mismo ID si es necesario, o dejar que la nube genere nuevos
                     Id_Salida = 0, // La nube generará nuevos IDs
                     Salida_CodFolio = s.Salida_CodFolio,
-                    Salida_Referencia = s.Salida_Referencia,
+                    Salida_PresupuestoFolio = s.Salida_PresupuestoFolio,
                     Salida_Estado = s.Salida_Estado,
                     Salida_Unidades = s.Salida_Unidades,
                     Salida_Costo = s.Salida_Costo,
@@ -516,7 +518,12 @@ namespace jmasAPI.Controllers
                     idCalle = s.idCalle,
                     idColonia = s.idColonia,
                     idOrdenServicio = s.idOrdenServicio,
-                    idUserAutoriza = s.idUserAutoriza
+                    idUserAutoriza = s.idUserAutoriza,
+                    idContratista = s.idContratista,
+                    salidaFolioOST = s.salidaFolioOST,
+                    Salida_DocumentoFirma = s.Salida_DocumentoFirma,
+                    Salida_DocumentoPago = s.Salida_DocumentoPago,
+                    Salida_Pagado = s.Salida_Pagado,
                 }).ToList();
 
                 var jsonContent = JsonSerializer.Serialize(salidasParaNube);
@@ -532,8 +539,6 @@ namespace jmasAPI.Controllers
                     var responseContent = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error al replicar SALIDAS MÚLTIPLES en la nube: {response.StatusCode}");
                     Console.WriteLine($"Respuesta del servidor: {responseContent}");
-
-                    // Opcional: puedes loggear el error pero no fallar la operación principal
                 }
                 else
                 {
@@ -542,9 +547,7 @@ namespace jmasAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Loggear el error pero no fallar la operación principal
                 Console.WriteLine($"Excepción al replicar salidas múltiples en la nube: {ex.Message}");
-                // Considerar agregar un sistema de reintentos aquí
             }
         }
 
