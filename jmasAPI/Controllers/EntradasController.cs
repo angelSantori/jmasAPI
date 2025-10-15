@@ -10,6 +10,7 @@ using jmasAPI.Models;
 using System.Text;
 using System.Text.Json;
 using Azure;
+using jmasAPI.DataTransferObjects;
 
 namespace jmasAPI.Controllers
 {
@@ -30,15 +31,29 @@ namespace jmasAPI.Controllers
 
         // GET: api/Entradas
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Entradas>>> GetEntradas()
+        public async Task<ActionResult<IEnumerable<EntradaListDTO>>> GetEntradas()
         {
             try
             {
-                // Establece timeout de 5 minutos (300 segundos) solo para esta consulta
-                _context.Database.SetCommandTimeout(300);
-
                 return await _context.Entradas
                     .OrderByDescending(e => e.Id_Entradas)
+                    .Select(e => new EntradaListDTO 
+                    { 
+                        Id_Entradas = e.Id_Entradas,
+                        Entrada_CodFolio = e.Entrada_CodFolio,
+                        Entrada_Referencia = e.Entrada_Referencia,
+                        Entrada_Estado = e.Entrada_Estado,
+                        Entrada_Unidades = e.Entrada_Unidades,
+                        Entrada_Costo = e.Entrada_Costo,
+                        Entrada_Fecha = e.Entrada_Fecha,
+                        Entrada_Comentario = e.Entrada_Comentario,
+                        Entrada_NumeroFactura = e.Entrada_NumeroFactura,
+                        idProducto = e.idProducto,
+                        Id_User = e.Id_User,
+                        Id_Almacen = e.Id_Almacen,
+                        Id_Proveedor = e.Id_Proveedor,
+                        Id_Junta = e.Id_Junta,
+                    })
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -49,9 +64,30 @@ namespace jmasAPI.Controllers
 
         // GET: api/Entradas/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Entradas>> GetEntradas(int id)
+        public async Task<ActionResult<EntradaDetalleDTO>> GetEntradas(int id)
         {
-            var entradas = await _context.Entradas.FindAsync(id);
+            var entradas = await _context.Entradas
+                .Where(e => e.Id_Entradas == id)
+                .Select(e => new EntradaDetalleDTO 
+                {
+                    Id_Entradas = e.Id_Entradas,
+                    Entrada_CodFolio = e.Entrada_CodFolio,
+                    Entrada_Referencia = e.Entrada_Referencia,
+                    Entrada_Estado = e.Entrada_Estado,
+                    Entrada_Unidades = e.Entrada_Unidades,
+                    Entrada_Costo = e.Entrada_Costo,
+                    Entrada_Fecha = e.Entrada_Fecha,
+                    Entrada_Comentario = e.Entrada_Comentario,
+                    Entrada_NumeroFactura = e.Entrada_NumeroFactura,
+                    Entrada_ImgB64Factura = e.Entrada_ImgB64Factura,
+                    idProducto = e.idProducto,
+                    Id_User = e.Id_User,
+                    Id_Almacen = e.Id_Almacen,
+                    Id_Proveedor = e.Id_Proveedor,
+                    Id_Junta = e.Id_Junta,
+
+                })
+                .FirstOrDefaultAsync();
 
             if (entradas == null)
             {
