@@ -68,9 +68,32 @@ namespace jmasAPI
 
         public DbSet<Asistencia> asistencias { get; set; } = default!;
 
+        public DbSet<Presupuestos> presupuestos { get; set; } = default!;
+
+        public DbSet<Contratistas> contratistas { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            //  Presupuestos
+            modelBuilder.Entity<Presupuestos>()
+                .HasOne<Users>()
+                .WithMany()
+                .HasForeignKey(userPresupuesto => userPresupuesto.idUser)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Presupuestos>()
+                .HasOne<Padron>()
+                .WithMany()
+                .HasForeignKey(padronPresupuesto  => padronPresupuesto.idPadron)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Presupuestos>()
+                .HasOne<Productos>()
+                .WithMany()
+                .HasForeignKey(productoPresupuesto => productoPresupuesto.idProducto)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //  Asistencias
             modelBuilder.Entity<Asistencia>()
@@ -210,6 +233,12 @@ namespace jmasAPI
                 .OnDelete(DeleteBehavior.Restrict);
 
             //SALIDAS relaciones
+            modelBuilder.Entity<Salidas>()
+                .HasOne<Contratistas>()
+                .WithMany()
+                .HasForeignKey(salContratista => salContratista.idContratista)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Salidas>()
                 .HasOne<Productos>()
                 .WithMany()
@@ -373,5 +402,6 @@ namespace jmasAPI
                 .HasForeignKey(ccontableProd => ccontableProd.idProducto)
                 .OnDelete(DeleteBehavior.Restrict);
         }        
+        public DbSet<jmasAPI.Models.Contratistas> Contratistas { get; set; } = default!;
     }
 }
