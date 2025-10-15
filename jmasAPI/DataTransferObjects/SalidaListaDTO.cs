@@ -4,7 +4,7 @@
     {
         public int Id_Salida { get; set; }
         public string Salida_CodFolio { get; set; }
-        public string? Salida_Referencia { get; set; }
+        public string Salida_PresupuestoFolio { get; set; }
         public bool Salida_Estado { get; set; }
         public double Salida_Unidades { get; set; }
         public double Salida_Costo { get; set; }
@@ -23,5 +23,7 @@
         public int? idColonia { get; set; }
         public int? idOrdenServicio { get; set; }
         public int? idUserAutoriza { get; set; }
+        public string? salidaFolioOST { get; set; }
+        public int? idContratista { get; set; }
     }
 }
