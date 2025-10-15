@@ -260,7 +260,13 @@ namespace jmasAPI.Controllers
                         user.role.canManageUsers,
                         user.role.canManageRoles,
                         user.role.canEvaluar,
-                        user.role.canCContables
+                        user.role.canCContables,
+                        user.role.canManageJuntas,
+                        user.role.canManageProveedores,
+                        user.role.canManageContratistas,
+                        user.role.canManageCalles,
+                        user.role.canManageColonias,
+                        user.role.canManageAlmacenes,
                     } : null
                 }
             });
